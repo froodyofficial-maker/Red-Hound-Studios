@@ -72,6 +72,7 @@ button{font:inherit;color:inherit}
 
 /* Rows */
 main{display:grid;gap:40px;padding-block:8px 72px}
+main>*{min-width:0}
 .row-h{display:flex;align-items:baseline;gap:14px;padding:0 var(--gutR) 0 var(--gut);flex-wrap:wrap}
 .row-h h2{margin:0;font-family:var(--display);font-weight:400;font-size:34px;letter-spacing:.04em;line-height:1}
 .row-h p{margin:0;font-size:13px;color:var(--dim);font-weight:600}
@@ -140,6 +141,27 @@ main{display:grid;gap:40px;padding-block:8px 72px}
 .imdb .star{color:#f5c518;font-size:14px}
 .imdb small{color:var(--dim);font-weight:600;font-size:12px}
 .imdb:hover i{box-shadow:0 0 0 2px rgba(245,197,24,.35)}
+/* Ratings */
+.rate{display:grid;gap:10px}
+.stars{display:flex;gap:2px;flex-wrap:wrap}
+.stars .s{border:0;background:none;padding:2px;font-size:26px;line-height:1;color:#3a302d;cursor:pointer;transition:color .15s,transform .2s var(--ease)}
+.stars .s.on{color:#f5c518}
+.stars:not(.locked):hover .s{color:#f5c518}
+.stars:not(.locked) .s:hover ~ .s{color:#3a302d}
+.stars:not(.locked) .s:hover{transform:scale(1.25)}
+.stars.locked .s{cursor:not-allowed;opacity:.5}
+.hint{margin:0;font-size:13px;color:var(--muted)}
+.hint b{color:var(--fg)}
+.votes{color:var(--dim);font-size:12px;font-weight:600;margin-left:6px}
+.endcard{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.82);backdrop-filter:blur(6px);animation:rise .5s var(--ease) both;padding:20px}
+.endcard>div{display:grid;gap:14px;justify-items:center;text-align:center}
+.endcard h5{margin:0;font-family:var(--display);font-weight:400;font-size:clamp(28px,4vw,44px);letter-spacing:.03em;line-height:1}
+.endcard .stars .s{font-size:clamp(24px,3.4vw,34px)}
+.endcard .btn{padding:9px 18px;font-size:14px}
+.frame{position:relative}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:200;transform:translate(-50%,20px);opacity:0;background:var(--fg);color:#0b0908;font-weight:800;padding:10px 18px;border-radius:999px;transition:opacity .3s var(--ease),transform .4s var(--ease);pointer-events:none}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
 footer{padding:24px var(--gutR) 40px var(--gut);border-top:1px solid var(--line);color:var(--dim);font-size:12px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
@@ -174,85 +196,61 @@ footer{padding:24px var(--gutR) 40px var(--gut);border-top:1px solid var(--line)
   </div>
   <div class="screen" id="screen"></div>
 </div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="scrim" id="scrim"></div>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title"></div>
 
+<script src="firebase-config.js"></script>
 <script>
 /* ---------- Catalogue ----------
-   Add a film: push an object into FILMS. youtube = the video ID from the watch URL.
-   Optional fields render only when filled:
-   poster (image data URI), year, runtime, rating, certificate, genres[], description, lore. */
+   Add a film: add an object to FILMS.
+   youtube = the video ID from the watch URL (the part after v=).
+   rating  = IMDb score when imdb is set; otherwise the studio's starting score,
+             which viewer ratings then pull up or down.
+   Optional: poster, imdb, year, runtime, rating, genres[], description, lore. */
 const FRANCHISES = [
   { id:"ghostbusters", name:"Ghostbusters", glow:"#7ee06a", blurb:"Red Hound's longest-running series" },
-  { id:"pool-shark",   name:"Pool Shark",   glow:"#29b48a", blurb:"" }
+  { id:"pool-shark",   name:"Pool Shark",   glow:"#2fb7e0", blurb:"" }
 ];
 
 const FILMS = [
-  {
-    id:"gb-united",
-    franchise:"ghostbusters",
-    title:"Ghostbusters: United",
-    short:"United",
-    installment:10,
-    youtube:"IEJmDwjZMv0",
-    imdb:"https://www.imdb.com/title/tt39434006/",
-    poster:"posters/ghostbusters-united.webp",
-    rating:"6.2",
-    runtime:"6m 7s",
-    year:"Jan 2026",
-    added:"2026-11-26"
-  },
-  {
-    id:"gb-severance",
-    franchise:"ghostbusters",
-    title:"Ghostbusters: Severance",
-    short:"Severance",
-    installment:9,
-    youtube:"E6P3YpHc-hM",
-    poster:"posters/ghostbusters-severance.webp",
-    rating:"5.9",
-    added:"2026-11-26"
-  }
+  /* Ghostbusters */
+  { id:"gb-severance", franchise:"ghostbusters", installment:9,
+    title:"Ghostbusters: Severance", short:"Severance",
+    youtube:"E6P3YpHc-hM", poster:"posters/ghostbusters-severance.webp",
+    rating:5.9 },
+  { id:"gb-united", franchise:"ghostbusters", installment:10,
+    title:"Ghostbusters: United", short:"United",
+    youtube:"IEJmDwjZMv0", poster:"posters/ghostbusters-united.webp",
+    imdb:"https://www.imdb.com/title/tt39434006/", rating:6.2,
+    year:"Jan 2026", runtime:"6m 7s" },
+  { id:"gb-return", franchise:"ghostbusters", installment:11,
+    title:"Ghostbusters: Return from 24'", short:"Return from 24'",
+    youtube:"hUmzqnDOeF8", poster:"posters/ghostbusters-return-from-24.webp",
+    imdb:"https://www.imdb.com/title/tt39423193/", rating:4.2,
+    year:"Jan 12, 2026", runtime:"2m 33s" },
+  { id:"gb-new-guy", franchise:"ghostbusters", installment:12,
+    title:"Ghostbusters: New Guy", short:"New Guy",
+    youtube:"TJ_Jm1yP79E", poster:"posters/ghostbusters-new-guy.png",
+    rating:3.4, runtime:"3m 11s" },
+  { id:"gb-haunting-hour", franchise:"ghostbusters", installment:13,
+    title:"Ghostbusters: Haunting Hour", short:"Haunting Hour",
+    youtube:"EekKzH1vIvY", poster:"posters/ghostbusters-haunting-hour.png",
+    rating:3.5, year:"May 2026", runtime:"2m 9s" },
+
+  /* Pool Shark */
+  { id:"ps-1", franchise:"pool-shark", installment:1,
+    title:"Pool Shark", short:"Pool Shark",
+    youtube:"vxOHSg3ikmI", poster:"posters/pool-shark.webp",
+    rating:4, year:"Apr 21, 2026", runtime:"34s" },
+  { id:"ps-2", franchise:"pool-shark", installment:2,
+    title:"Pool Shark 2", short:"Pool Shark 2",
+    youtube:"BgnGkhVsaQk", poster:"posters/pool-shark-2.webp",
+    rating:2.7, year:"Apr 2026", runtime:"52s" }
 ];
 
-FILMS.push({
-  id:"gb-return",
-  franchise:"ghostbusters",
-  title:"Ghostbusters: Return from 24'",
-  short:"Return from 24'",
-  installment:11,
-  poster:"posters/ghostbusters-return-from-24.webp",
-  year:"Jan 12, 2026",
-  runtime:"2m 33s",
-  rating:"4.2",
-  youtube:"hUmzqnDOeF8",
-  imdb:"https://www.imdb.com/title/tt39423193/",
-  added:"2026-11-26"
-});
-
-FILMS.push({
-  id:"gb-new-guy",
-  franchise:"ghostbusters",
-  title:"Ghostbusters: New Guy",
-  short:"New Guy",
-  installment:12,
-  poster:"posters/ghostbusters-new-guy.png",
-  runtime:"3m 11s",
-  rating:"3.4",
-  added:"2026-11-26"
-}, {
-  id:"gb-haunting-hour",
-  franchise:"ghostbusters",
-  title:"Ghostbusters: Haunting Hour",
-  short:"Haunting Hour",
-  installment:13,
-  runtime:"2m 9s",
-  rating:"3.5",
-  added:"2026-11-26"
-});
-
 /* Film shown in the big banner at the top. */
-const FEATURED = "gb-return";
+const FEATURED = "gb-haunting-hour";
 
 /* ---------- Rendering ---------- */
 const $ = s => document.querySelector(s);
@@ -274,10 +272,12 @@ function posterHTML(f){
 function featured(){
   return FILMS.find(f => f.id === FEATURED) || [...FILMS].sort((a,b) => (b.added||'').localeCompare(a.added||''))[0];
 }
-function imdbBadge(f){
-  if (!f.imdb) return `<span class="imdb"><b class="star">★</b>${esc(f.rating)}<small>/10</small></span>`;
-  const inner = `<i>IMDb</i>${esc(f.rating)}<small>/10</small>`;
-  return f.imdb ? `<a class="imdb" href="${f.imdb}" target="_blank" rel="noopener" title="View on IMDb">${inner}</a>` : `<span class="imdb">${inner}</span>`;
+function scoreBadge(f){
+  if (f.imdb && f.rating != null)
+    return `<a class="imdb" data-score="${f.id}" href="${f.imdb}" target="_blank" rel="noopener" title="View on IMDb"><i>IMDb</i>${fmt(f.rating)}<small>/10</small></a>`;
+  const sc = score(f);
+  if (sc == null) return `<span data-score="${f.id}"></span>`;
+  return `<span class="imdb" data-score="${f.id}" title="Studio score blended with viewer ratings"><b class="star">★</b>${fmt(sc)}<small>/10</small></span>`;
 }
 function metaHTML(f){
   const F = fr(f.franchise), bits = [];
@@ -286,7 +286,7 @@ function metaHTML(f){
   if (f.year) bits.push(`<span>${esc(f.year)}</span>`);
   if (f.runtime) bits.push(`<span>${esc(f.runtime)}</span>`);
   if (f.certificate) bits.push(`<span class="chip">${esc(f.certificate)}</span>`);
-  if (f.rating) bits.push(imdbBadge(f));
+  if (f.rating != null || f.id in Ratings.agg) bits.push(scoreBadge(f));
   return bits.join('');
 }
 
@@ -343,7 +343,7 @@ function openFilm(id){
   const facts = [
     ['Franchise', esc(F.name)],
     f.installment && ['Installment', `${f.installment}${['th','st','nd','rd'][(f.installment%100>10&&f.installment%100<14)?0:(f.installment%10<4?f.installment%10:0)]||'th'} film`],
-    f.rating && [f.imdb ? 'IMDb rating' : 'Rating', imdbBadge(f)],
+    (f.rating != null || f.id in Ratings.agg) && [f.imdb ? 'IMDb rating' : 'Score', scoreBadge(f) + votesHTML(f)],
     f.year && ['Released', esc(f.year)],
     f.runtime && ['Runtime', esc(f.runtime)],
 
@@ -367,6 +367,7 @@ function openFilm(id){
     <div class="sheet-body">
       ${f.description ? `<div class="sec"><h4>Synopsis</h4><p>${esc(f.description)}</p></div>` : ''}
       ${f.lore ? `<div class="sec"><h4>Lore</h4><p>${esc(f.lore)}</p></div>` : ''}
+      ${f.youtube ? rateHTML(f) : ''}
       <div class="sec"><dl class="facts">${facts.map(([k,v]) => `<div><dt>${esc(k)}</dt><dd>${v}</dd></div>`).join('')}</dl></div>
       ${maxN > 1 ? `<div class="sec"><h4>${esc(F.name)} timeline</h4><div class="timeline">${
         Array.from({length:maxN},(_,i)=>i+1).map(n => {
@@ -387,6 +388,8 @@ function closeFilm(){
   lastFocus && lastFocus.focus && lastFocus.focus({preventScroll:true});
 }
 document.addEventListener('click', e => {
+  const v = e.target.closest('[data-vote]'); if (v) { Ratings.vote(v.dataset.vote, +v.dataset.n); return; }
+  if (e.target.closest('#endskip')) { const ec = $('#endcard'); if (ec) ec.hidden = true; return; }
   const p = e.target.closest('[data-play]'); if (p) { playFilm(p.dataset.play); return; }
   if (e.target.closest('#pclose')) { closePlayer(); return; }
   const o = e.target.closest('[data-open]'); if (o) { openFilm(o.dataset.open); return; }
@@ -395,20 +398,190 @@ document.addEventListener('click', e => {
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { if ($('#player').classList.contains('on')) closePlayer(); else closeFilm(); } });
 addEventListener('scroll', () => $('#bar').classList.toggle('solid', scrollY > 40), {passive:true});
 
-/* ---------- Player ---------- */
+/* ---------- Player ----------
+   Uses the YouTube IFrame API so the site knows when a film has been watched
+   (90% or the end), which unlocks rating it. */
+let ytp = null, watchTimer = null, ytReady = null;
+function loadYT(){
+  if (ytReady) return ytReady;
+  ytReady = new Promise((res, rej) => {
+    if (window.YT && YT.Player) return res();
+    const prev = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => { prev && prev(); res(); };
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    tag.onerror = rej;
+    document.head.appendChild(tag);
+    setTimeout(() => rej(new Error('timeout')), 6000);
+  });
+  ytReady.catch(() => { ytReady = null; });
+  return ytReady;
+}
+function secs(rt){
+  if (!rt) return 0;
+  const m = /(\d+)\s*m/.exec(rt), sec = /(\d+)\s*s/.exec(rt);
+  return (m ? +m[1]*60 : 0) + (sec ? +sec[1] : 0);
+}
 function playFilm(id){
   const f = FILMS.find(x => x.id === id); if (!f || !f.youtube) return;
   $('#pfr').textContent = fr(f.franchise).name + (f.installment ? ` · Part ${f.installment}` : '');
   $('#pname').textContent = f.title;
-  $('#screen').innerHTML = `<div class="frame"><iframe src="https://www.youtube-nocookie.com/embed/${f.youtube}?autoplay=1&rel=0&modestbranding=1&playsinline=1" title="${esc(f.title)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>`;
+  $('#screen').innerHTML = `<div class="frame"><div id="yt"></div><div class="endcard" id="endcard" hidden></div></div>`;
   $('#player').classList.add('on');
   document.body.style.overflow = 'hidden';
   $('#pclose').focus({preventScroll:true});
+
+  const vars = { autoplay:1, rel:0, modestbranding:1, playsinline:1 };
+  loadYT().then(() => {
+    if (!$('#yt')) return;
+    ytp = new YT.Player('yt', {
+      host:'https://www.youtube-nocookie.com', videoId:f.youtube, playerVars:vars, width:'100%', height:'100%',
+      events:{ onStateChange: e => { if (e.data === YT.PlayerState.ENDED) { Ratings.markWatched(f.id); showEndcard(f); } } }
+    });
+    watchTimer = setInterval(() => {
+      try { const d = ytp.getDuration(), c = ytp.getCurrentTime(); if (d > 0 && c / d >= 0.9) Ratings.markWatched(f.id); } catch(_){}
+    }, 1000);
+  }).catch(() => {
+    // API unavailable: plain embed, and count it as watched after 90% of the runtime.
+    if (!$('#yt')) return;
+    $('#yt').outerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${f.youtube}?autoplay=1&rel=0&modestbranding=1&playsinline=1" title="${esc(f.title)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
+    const t = secs(f.runtime);
+    if (t) watchTimer = setTimeout(() => Ratings.markWatched(f.id), t * 900);
+  });
+}
+function showEndcard(f){
+  const ec = $('#endcard'); if (!ec) return;
+  const mine = Ratings.mine[f.id];
+  ec.innerHTML = `<div>
+    <div class="eyebrow"><span class="dot"></span>You finished it</div>
+    <h5>How was ${esc(f.short || f.title)}?</h5>
+    ${starsHTML(f, false)}
+    <p class="hint" data-endhint>${mine ? `You rated it <b>${mine}/10</b>. Tap a star to change it.` : 'Tap a star to rate it out of 10.'}</p>
+    <button class="btn ghost" id="endskip">Close</button>
+  </div>`;
+  ec.hidden = false;
 }
 function closePlayer(){
   $('#player').classList.remove('on');
-  setTimeout(() => { if (!$('#player').classList.contains('on')) $('#screen').innerHTML = ''; }, 450);
+  clearInterval(watchTimer); clearTimeout(watchTimer); watchTimer = null;
+  setTimeout(() => {
+    if ($('#player').classList.contains('on')) return;
+    try { ytp && ytp.destroy(); } catch(_){}
+    ytp = null; $('#screen').innerHTML = '';
+  }, 450);
   if (!$('#sheet').classList.contains('on')) document.body.style.overflow = '';
+}
+
+/* ---------- Ratings ----------
+   Every vote is kept on the viewer's device. When firebase-config.js holds a
+   Firebase project config, votes are also shared, so everyone's ratings count. */
+const BASE_WEIGHT = 5; // the studio's starting score counts as this many viewer votes
+const ls = {
+  get(k, d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(_){ return d; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(_){} }
+};
+const Ratings = {
+  watched: new Set(ls.get('rh-watched', [])),
+  mine: ls.get('rh-mine', {}),
+  agg: {},          // film id -> {sum, count}
+  shared: false, db: null, uid: null,
+
+  localAgg(){
+    if (this.shared) return;
+    this.agg = {};
+    for (const [id, n] of Object.entries(this.mine)) this.agg[id] = { sum:n, count:1 };
+  },
+  markWatched(id){
+    if (this.watched.has(id)) return;
+    this.watched.add(id); ls.set('rh-watched', [...this.watched]);
+    refreshRatings();
+  },
+  vote(id, n){
+    if (!this.watched.has(id) || !(n >= 1 && n <= 10)) return;
+    this.mine[id] = n; ls.set('rh-mine', this.mine);
+    if (this.shared && this.uid) {
+      this.db.collection('ratings').doc(`${id}_${this.uid}`)
+        .set({ film:id, uid:this.uid, score:n, at: firebase.firestore.FieldValue.serverTimestamp() })
+        .catch(() => toast('Couldn\'t save your rating online. It\'s kept on this device.'));
+    } else this.localAgg();
+    const f = FILMS.find(x => x.id === id);
+    toast(`Rated ${f ? (f.short || f.title) : ''} ${n}/10`);
+    refreshRatings();
+  },
+  async connect(){
+    const cfg = window.RH_FIREBASE;
+    if (!cfg || !cfg.apiKey) return;
+    const v = '10.12.2', base = `https://www.gstatic.com/firebasejs/${v}/`;
+    for (const m of ['firebase-app-compat.js','firebase-auth-compat.js','firebase-firestore-compat.js'])
+      await new Promise((res, rej) => { const t = document.createElement('script'); t.src = base + m; t.onload = res; t.onerror = rej; document.head.appendChild(t); });
+    firebase.initializeApp(cfg);
+    const cred = await firebase.auth().signInAnonymously();
+    this.uid = cred.user.uid;
+    this.db = firebase.firestore();
+    this.db.collection('ratings').onSnapshot(snap => {
+      const agg = {}, mineServer = {};
+      snap.forEach(d => {
+        const r = d.data();
+        if (!FILMS.some(f => f.id === r.film) || !(r.score >= 1 && r.score <= 10)) return;
+        (agg[r.film] ||= { sum:0, count:0 }); agg[r.film].sum += r.score; agg[r.film].count++;
+        if (r.uid === this.uid) mineServer[r.film] = r.score;
+      });
+      // Votes made on this device before sharing was switched on get uploaded once.
+      for (const [id, n] of Object.entries(this.mine)) if (!(id in mineServer)) {
+        this.db.collection('ratings').doc(`${id}_${this.uid}`).set({ film:id, uid:this.uid, score:n, at: firebase.firestore.FieldValue.serverTimestamp() }).catch(()=>{});
+      }
+      this.mine = { ...this.mine, ...mineServer }; ls.set('rh-mine', this.mine);
+      this.agg = agg; this.shared = true;
+      refreshRatings();
+    }, () => {});
+  }
+};
+Ratings.localAgg();
+
+function fmt(n){ return (Math.round(n * 10) / 10).toFixed(1); }
+function score(f){
+  const a = Ratings.agg[f.id] || { sum:0, count:0 };
+  if (f.rating == null) return a.count ? a.sum / a.count : null;
+  return (f.rating * BASE_WEIGHT + a.sum) / (BASE_WEIGHT + a.count);
+}
+function votesHTML(f){
+  const a = Ratings.agg[f.id];
+  if (!a || !a.count || !Ratings.shared) return `<span data-votes="${f.id}"></span>`;
+  const avg = fmt(a.sum / a.count);
+  const txt = f.imdb ? `Red Hound viewers: ${avg} (${a.count})` : `${a.count} viewer ${a.count === 1 ? 'rating' : 'ratings'}`;
+  return `<span class="votes" data-votes="${f.id}">${txt}</span>`;
+}
+function starsHTML(f, locked){
+  const m = Ratings.mine[f.id] || 0;
+  return `<div class="stars${locked ? ' locked' : ''}" role="group" aria-label="Rate ${esc(f.title)} out of 10">${
+    Array.from({length:10}, (_, i) => i + 1).map(n => locked
+      ? `<span class="s" aria-hidden="true">★</span>`
+      : `<button class="s${n <= m ? ' on' : ''}" data-vote="${f.id}" data-n="${n}" aria-label="${n} out of 10">★</button>`
+    ).join('')}</div>`;
+}
+function rateHTML(f){
+  const watched = Ratings.watched.has(f.id), m = Ratings.mine[f.id];
+  const note = f.imdb ? ' Viewer ratings are shown beside the IMDb score and don\'t change it.' : '';
+  const hint = !watched ? 'Watch the film to rate it.'
+    : m ? `You rated it <b>${m}/10</b>. Tap a star to change it.${note}` : `Tap a star to rate it out of 10.${note}`;
+  return `<div class="sec rate" data-rate="${f.id}"><h4>Your rating</h4>${starsHTML(f, !watched)}<p class="hint">${hint}</p></div>`;
+}
+function refreshRatings(){
+  const byId = id => FILMS.find(f => f.id === id);
+  document.querySelectorAll('[data-score]').forEach(el => { const f = byId(el.dataset.score); if (f) el.outerHTML = scoreBadge(f); });
+  document.querySelectorAll('[data-votes]').forEach(el => { const f = byId(el.dataset.votes); if (f) el.outerHTML = votesHTML(f); });
+  document.querySelectorAll('[data-rate]').forEach(el => { const f = byId(el.dataset.rate); if (f) el.outerHTML = rateHTML(f); });
+  const ec = $('#endcard');
+  if (ec && !ec.hidden) {
+    const id = ec.querySelector('[data-vote]')?.dataset.vote, f = byId(id), m = Ratings.mine[id];
+    if (f) { ec.querySelector('.stars').outerHTML = starsHTML(f, false);
+      ec.querySelector('[data-endhint]').innerHTML = m ? `Thanks! You rated it <b>${m}/10</b>.` : 'Tap a star to rate it out of 10.'; }
+  }
+}
+let toastT;
+function toast(msg){
+  const t = $('#toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2200);
 }
 
 /* ---------- Hero ambience: drifting spectral haze ---------- */
@@ -450,6 +623,7 @@ function closePlayer(){
 })();
 
 render();
+Ratings.connect().catch(() => {});
 </script>
 </body>
 </html>
