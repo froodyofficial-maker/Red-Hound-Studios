@@ -134,6 +134,10 @@ main{display:grid;gap:40px;padding-block:8px 72px}
 .screen .frame{width:min(100%,calc((100vh - 110px) * 16 / 9));aspect-ratio:16/9;max-width:100%;border-radius:6px;overflow:hidden;background:#000;box-shadow:0 0 0 1px #1a1a1a,0 0 80px rgba(211,38,46,.18)}
 .screen iframe{width:100%;height:100%;border:0;display:block}
 
+.imdb{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--fg);font-weight:800}
+.imdb i{font-style:normal;background:#f5c518;color:#000;font-family:Arial,Helvetica,sans-serif;font-weight:900;font-size:12px;letter-spacing:-.02em;padding:2px 5px;border-radius:3px;line-height:1.2}
+.imdb small{color:var(--dim);font-weight:600;font-size:12px}
+.imdb:hover i{box-shadow:0 0 0 2px rgba(245,197,24,.35)}
 footer{padding:24px var(--gutR) 40px var(--gut);border-top:1px solid var(--line);color:var(--dim);font-size:12px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
@@ -190,6 +194,10 @@ const FILMS = [
     installment:10,
     youtube:"IEJmDwjZMv0",
     imdb:"https://www.imdb.com/title/tt39434006/",
+    poster:"posters/ghostbusters-united.webp",
+    rating:"6.2",
+    runtime:"6m 7s",
+    year:"Jan 2026",
     added:"2026-11-26"
   }
 ];
@@ -211,6 +219,10 @@ function posterHTML(f){
   </div>`;
 }
 
+function imdbBadge(f){
+  const inner = `<i>IMDb</i>${esc(f.rating)}<small>/10</small>`;
+  return f.imdb ? `<a class="imdb" href="${f.imdb}" target="_blank" rel="noopener" title="View on IMDb">${inner}</a>` : `<span class="imdb">${inner}</span>`;
+}
 function metaHTML(f){
   const F = fr(f.franchise), bits = [];
   bits.push(`<span class="chip">${esc(F.name)}</span>`);
@@ -218,7 +230,7 @@ function metaHTML(f){
   if (f.year) bits.push(`<span>${esc(f.year)}</span>`);
   if (f.runtime) bits.push(`<span>${esc(f.runtime)}</span>`);
   if (f.certificate) bits.push(`<span class="chip">${esc(f.certificate)}</span>`);
-  if (f.rating) bits.push(`<span style="color:#f5c518">★ ${esc(f.rating)}</span>`);
+  if (f.rating) bits.push(imdbBadge(f));
   return bits.join('');
 }
 
@@ -273,12 +285,13 @@ function openFilm(id){
   const siblings = FILMS.filter(x => x.franchise === f.franchise);
   const maxN = Math.max(f.installment || 0, ...siblings.map(s => s.installment || 0));
   const facts = [
-    ['Franchise', F.name],
+    ['Franchise', esc(F.name)],
     f.installment && ['Installment', `${f.installment}${['th','st','nd','rd'][(f.installment%100>10&&f.installment%100<14)?0:(f.installment%10<4?f.installment%10:0)]||'th'} film`],
-    f.year && ['Released', f.year],
-    f.runtime && ['Runtime', f.runtime],
-    f.rating && ['IMDb rating', '★ ' + f.rating],
-    f.genres && ['Genre', f.genres.join(', ')]
+    f.rating && ['IMDb rating', imdbBadge(f)],
+    f.year && ['Released', esc(f.year)],
+    f.runtime && ['Runtime', esc(f.runtime)],
+
+    f.genres && ['Genre', esc(f.genres.join(', '))]
   ].filter(Boolean);
 
   $('#sheet').innerHTML = `
@@ -298,7 +311,7 @@ function openFilm(id){
     <div class="sheet-body">
       ${f.description ? `<div class="sec"><h4>Synopsis</h4><p>${esc(f.description)}</p></div>` : ''}
       ${f.lore ? `<div class="sec"><h4>Lore</h4><p>${esc(f.lore)}</p></div>` : ''}
-      <div class="sec"><dl class="facts">${facts.map(([k,v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl></div>
+      <div class="sec"><dl class="facts">${facts.map(([k,v]) => `<div><dt>${esc(k)}</dt><dd>${v}</dd></div>`).join('')}</dl></div>
       ${maxN > 1 ? `<div class="sec"><h4>${esc(F.name)} timeline</h4><div class="timeline">${
         Array.from({length:maxN},(_,i)=>i+1).map(n => {
           const s = siblings.find(x => x.installment === n);
