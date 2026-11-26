@@ -22,6 +22,7 @@
   color-scheme:dark;
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html{background:var(--bg)}
 body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--bg)}
@@ -69,10 +70,11 @@ button{font:inherit;color:inherit}
 .hero-in>*:nth-child(2){animation-delay:.08s}.hero-in>*:nth-child(3){animation-delay:.16s}.hero-in>*:nth-child(4){animation-delay:.24s}
 .row{animation:rise .8s var(--ease) both;animation-delay:.3s}
 .row+.row{animation-delay:.4s}
+.row+.row+.row{animation-delay:.5s}
 
 /* Rows */
 main{display:grid;gap:40px;padding-block:8px 72px}
-main>*{min-width:0}
+main>*{min-width:0;scroll-margin-top:calc(72px + env(safe-area-inset-top,0px))}
 .row-h{display:flex;align-items:baseline;gap:14px;padding:0 var(--gutR) 0 var(--gut);flex-wrap:wrap}
 .row-h h2{margin:0;font-family:var(--display);font-weight:400;font-size:34px;letter-spacing:.04em;line-height:1}
 .row-h p{margin:0;font-size:13px;color:var(--dim);font-weight:600}
@@ -85,6 +87,13 @@ main>*{min-width:0}
 .card:hover .poster,.card:focus-visible .poster{box-shadow:0 22px 50px rgba(0,0,0,.7),0 0 0 2px var(--hound)}
 .card .cap{display:flex;justify-content:space-between;gap:8px;margin-top:10px;font-size:13px;font-weight:700}
 .card .cap span:last-child{color:var(--dim);font-variant-numeric:tabular-nums}
+.top .card{width:auto;display:flex;align-items:flex-end;gap:0}
+.top .rank{font-family:var(--display);font-size:clamp(130px,16vw,200px);line-height:.72;color:var(--bg);-webkit-text-stroke:3px #5a4a46;margin-right:-14px;letter-spacing:-.04em;transition:-webkit-text-stroke-color .4s var(--ease),transform .45s var(--ease);user-select:none}
+.top .card:hover .rank,.top .card:focus-visible .rank{-webkit-text-stroke-color:var(--hound);transform:translateX(-6px)}
+.top .card>div:last-child{width:clamp(130px,15vw,180px);position:relative}
+.top .rank-1{-webkit-text-stroke-color:#f5c518}
+.views{color:var(--muted);font-weight:700;font-variant-numeric:tabular-nums}
+.pop{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0b0908;background:#f5c518;border-radius:4px;padding:3px 8px;align-self:center}
 .empty{margin:18px var(--gutR) 0 var(--gut);border:1px dashed var(--line);border-radius:8px;padding:28px 22px;color:var(--muted);font-size:14px;max-width:520px;display:grid;gap:4px}
 .empty strong{color:var(--fg);font-size:15px}
 
@@ -209,9 +218,13 @@ footer{padding:24px var(--gutR) 40px var(--gut);border-top:1px solid var(--line)
              which viewer ratings then pull up or down.
    Optional: poster, imdb, year, runtime, rating, genres[], description, lore. */
 const FRANCHISES = [
-  { id:"ghostbusters", name:"Ghostbusters", glow:"#7ee06a", blurb:"Red Hound's longest-running series" },
-  { id:"pool-shark",   name:"Pool Shark",   glow:"#2fb7e0", blurb:"" }
+  { id:"pool-shark",       name:"Pool Shark",       glow:"#2fb7e0", blurb:"", popular:true },
+  { id:"ghostbusters",     name:"Ghostbusters",     glow:"#7ee06a", blurb:"Red Hound's longest-running series" },
+  { id:"dead-by-daylight", name:"Dead by Daylight", glow:"#e8662f", blurb:"" }
 ];
+
+/* Most popular films, in order. */
+const TOP5 = ["ps-2", "ps-1", "ps-3", "dbd-1", "gb-return"];
 
 const FILMS = [
   /* Ghostbusters */
@@ -242,11 +255,19 @@ const FILMS = [
   { id:"ps-1", franchise:"pool-shark", installment:1,
     title:"Pool Shark", short:"Pool Shark",
     youtube:"vxOHSg3ikmI", poster:"posters/pool-shark.webp",
-    rating:4, year:"Apr 21, 2026", runtime:"34s" },
+    rating:4, year:"Apr 21, 2026", runtime:"34s", views:334 },
   { id:"ps-2", franchise:"pool-shark", installment:2,
     title:"Pool Shark 2", short:"Pool Shark 2",
     youtube:"BgnGkhVsaQk", poster:"posters/pool-shark-2.webp",
-    rating:2.7, year:"Apr 2026", runtime:"52s" }
+    rating:2.7, year:"Apr 2026", runtime:"52s", views:566 },
+  { id:"ps-3", franchise:"pool-shark", installment:3,
+    title:"Pool Shark 3", short:"Pool Shark 3",
+    views:266 },
+
+  /* Dead by Daylight */
+  { id:"dbd-1", franchise:"dead-by-daylight", installment:1,
+    title:"Dead by Daylight", short:"Dead by Daylight",
+    youtube:"cw12Bmfbfqk", rating:4.5, runtime:"59s" }
 ];
 
 /* Film shown in the big banner at the top. */
@@ -292,7 +313,7 @@ function metaHTML(f){
 
 function render(){
   // nav
-  $('#nav').innerHTML = FRANCHISES.map(F => `<a href="#row-${F.id}">${esc(F.name)}</a>`).join('');
+  $('#nav').innerHTML = `<a href="#row-top">Top 5</a>` + FRANCHISES.map(F => `<a href="#row-${F.id}">${esc(F.name)}</a>`).join('');
 
   // hero: newest film
   const feat = featured();
@@ -310,9 +331,18 @@ function render(){
   }
 
   // rows
-  $('#rows').innerHTML = FRANCHISES.map(F => {
+  const top = TOP5.map(id => FILMS.find(f => f.id === id)).filter(Boolean);
+  const topRow = top.length ? `<section class="row top" id="row-top">
+      <div class="row-h"><span class="tag" style="background:#f5c518"></span><h2>Top 5 most popular</h2><p>Ranked by views</p></div>
+      <div class="track">${top.map((f, i) => `
+        <button class="card" data-open="${f.id}" aria-label="Number ${i+1}: ${esc(f.title)}">
+          <span class="rank rank-${i+1}" aria-hidden="true">${i+1}</span>
+          <div><div class="poster">${posterHTML(f)}</div>
+            <div class="cap"><span>${esc(f.short || f.title)}</span><span class="views">${f.views ? f.views.toLocaleString() + ' views' : ''}</span></div></div>
+        </button>`).join('')}</div></section>` : '';
+  $('#rows').innerHTML = topRow + FRANCHISES.map(F => {
     const list = FILMS.filter(f => f.franchise === F.id).sort((a,b) => (a.installment||0) - (b.installment||0));
-    const head = `<div class="row-h"><span class="tag" style="background:${F.glow}"></span><h2>${esc(F.name)}</h2>
+    const head = `<div class="row-h"><span class="tag" style="background:${F.glow}"></span><h2>${esc(F.name)}</h2>${F.popular ? '<span class="pop">★ Most popular franchise</span>' : ''}
       <p>${list.length} ${list.length === 1 ? 'film' : 'films'}${F.blurb && list.length ? ' · ' + esc(F.blurb) : ''}</p></div>`;
     const body = list.length
       ? `<div class="track">${list.map(f => `
@@ -346,6 +376,7 @@ function openFilm(id){
     (f.rating != null || f.id in Ratings.agg) && [f.imdb ? 'IMDb rating' : 'Score', scoreBadge(f) + votesHTML(f)],
     f.year && ['Released', esc(f.year)],
     f.runtime && ['Runtime', esc(f.runtime)],
+    f.views && ['Views', f.views.toLocaleString()],
 
     f.genres && ['Genre', esc(f.genres.join(', '))]
   ].filter(Boolean);
