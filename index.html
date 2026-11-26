@@ -215,6 +215,16 @@ const FILMS = [
   }
 ];
 
+FILMS.push({
+  id:"gb-return",
+  franchise:"ghostbusters",
+  title:"Ghostbusters: Return",
+  short:"Return",
+  year:"2024",
+  imdb:"https://www.imdb.com/title/tt39423193/",
+  added:"2026-11-26"
+});
+
 /* Film shown in the big banner at the top. */
 const FEATURED = "gb-united";
 
@@ -268,7 +278,7 @@ function render(){
       <h1>${lead ? `<small>${esc(lead)}</small>` : ''}${esc(rest)}</h1>
       <div class="meta">${metaHTML(feat)}</div>
       <div class="actions">
-        <button class="btn play" data-play="${feat.id}">${playIcon}Play</button>
+        ${feat.youtube ? `<button class="btn play" data-play="${feat.id}">${playIcon}Play</button>` : ''}
         <button class="btn ghost" data-open="${feat.id}">${infoIcon}More info</button>
       </div>`;
   }
@@ -323,7 +333,7 @@ function openFilm(id){
         <h3 id="sheet-title">${esc(f.title)}</h3>
         <div class="meta">${metaHTML(f)}</div>
         <div class="actions">
-          <button class="btn play" data-play="${f.id}">${playIcon}Play</button>
+          ${f.youtube ? `<button class="btn play" data-play="${f.id}">${playIcon}Play</button>` : ''}
           ${f.imdb ? `<a class="btn ghost" href="${f.imdb}" target="_blank" rel="noopener">IMDb page</a>` : ''}
         </div>
       </div>
@@ -361,7 +371,7 @@ addEventListener('scroll', () => $('#bar').classList.toggle('solid', scrollY > 4
 
 /* ---------- Player ---------- */
 function playFilm(id){
-  const f = FILMS.find(x => x.id === id); if (!f) return;
+  const f = FILMS.find(x => x.id === id); if (!f || !f.youtube) return;
   $('#pfr').textContent = fr(f.franchise).name + (f.installment ? ` · Part ${f.installment}` : '');
   $('#pname').textContent = f.title;
   $('#screen').innerHTML = `<div class="frame"><iframe src="https://www.youtube-nocookie.com/embed/${f.youtube}?autoplay=1&rel=0&modestbranding=1&playsinline=1" title="${esc(f.title)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>`;
