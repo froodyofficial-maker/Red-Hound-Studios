@@ -94,6 +94,26 @@ main>*{min-width:0;scroll-margin-top:calc(72px + env(safe-area-inset-top,0px))}
 .top .rank-1{-webkit-text-stroke-color:#f5c518}
 .views{color:var(--muted);font-weight:700;font-variant-numeric:tabular-nums}
 .pop{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0b0908;background:#f5c518;border-radius:4px;padding:3px 8px;align-self:center}
+.face{border-radius:50%;overflow:hidden;aspect-ratio:1;background:var(--surface);box-shadow:0 0 0 2px var(--line)}
+.face img{width:100%;height:100%;object-fit:cover;display:block}
+.actor{flex:0 0 auto;width:clamp(104px,11vw,132px);border:0;background:none;padding:0;cursor:pointer;display:grid;gap:10px;justify-items:center;align-content:start;text-align:center;scroll-snap-align:start;transition:transform .45s var(--ease)}
+.actor .face{width:100%;transition:box-shadow .35s var(--ease)}
+.actor:hover,.actor:focus-visible{transform:translateY(-6px)}
+.actor:hover .face,.actor:focus-visible .face{box-shadow:0 0 0 3px var(--hound),0 16px 40px rgba(0,0,0,.6)}
+.actor b{font-size:13px;font-weight:700;line-height:1.25}
+.actor small{display:block;font-size:11px;color:var(--dim);font-weight:600;margin-top:2px}
+.cast{display:flex;gap:16px;flex-wrap:wrap}
+.cast .actor{width:84px}
+.cast .actor b{font-size:12px}
+.sheet-top.person{grid-template-columns:180px 1fr;align-items:center}
+.sheet-top.person .face{width:180px;box-shadow:0 0 0 3px var(--hound),0 20px 50px rgba(0,0,0,.6)}
+.links{display:flex;gap:8px;flex-wrap:wrap}
+.links a{font-size:13px;font-weight:700;text-decoration:none;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px var(--line);transition:background .2s}
+.links a:hover{background:var(--hound-deep)}
+.mini{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px}
+.mini .card{width:110px}
+.mini .card:hover{transform:translateY(-4px)}
+@media (max-width:620px){.sheet-top.person{grid-template-columns:1fr}.sheet-top.person .face{width:130px}}
 .empty{margin:18px var(--gutR) 0 var(--gut);border:1px dashed var(--line);border-radius:8px;padding:28px 22px;color:var(--muted);font-size:14px;max-width:520px;display:grid;gap:4px}
 .empty strong{color:var(--fg);font-size:15px}
 
@@ -223,6 +243,48 @@ const FRANCHISES = [
   { id:"dead-by-daylight", name:"Dead by Daylight", glow:"#e8662f", blurb:"" }
 ];
 
+/* ---------- Actors ----------
+   From the Ghostbusters 'n' more cast page. films = ids of films above they appear in. */
+const ACTORS = [
+  { id:"raghuvir", name:"Raghuvir", films:["gb-severance","gb-united","gb-return","gb-new-guy","gb-haunting-hour"],
+    youtube:["stuffisrealgood"],
+    bio:"The creator of it all. Ghostbusters 1 started out as something we wanted to do for fun. Raghuvir has starred in every single Ghostbusters movie, and if he doesn't appear in some, that means he is the cameraman or director. Now we're running a fully operational business!" },
+  { id:"yash", name:"Yash", films:[],
+    bio:"Yash is a former member of the Ghostbusters, and last appeared Ghostbusters 3, but in terms of deleted movies, he was in the deleted version of Ghostbusters 6 too. He shifted to chennai, breaking hearts of many fans. You will be remembered (for your goofyness, and for your looking back!)" },
+  { id:"abeer", name:"Abeer", films:["gb-severance","gb-united","gb-return","gb-new-guy","gb-haunting-hour"],
+    bio:"He's a goofy and fun guy, that gave the films a sense of humor and provided a few ideas (like the easter egg in GB 1). His smiling does not help, though. \"That looks like my grandpa, dude!\" He also came in every movie other than GB 4." },
+  { id:"abhiraj", name:"Abhiraj", films:["gb-united"],
+    bio:"Was the camerman for the first ever Ghostbusters movie. He made his first appearance in Ghostbusters 4, and continued to appear in the movies until Ghostbusters 6. 4 movies later, he stars as one of the main characters in the 10th movie, and then never to be seen again later." },
+  { id:"eenu", name:"Eenu", films:[],
+    bio:"Famous for his \"I'm here to help!\" line, Eenu was in the ending of Ghostbusters 2 and was in the deleted Ghostbusters 6." },
+  { id:"vedaant", name:"Vedaant Bhalla", films:[], role:"Editor & special effects",
+    youtube:["WinterDeckStudios-New","WarpedAnimation"],
+    bio:"The editor and special effects editor for Ghostbusters 3, which was the original \"best edited\" of the franchise. He was also supposed to do the CGI for The Last Dance, but thats on Raghuvir Bhardwaj now." },
+  { id:"ivaan", name:"Ivaan", films:["gb-united","gb-return","gb-haunting-hour"],
+    bio:"Ivaan made his first appearance in Ghostbusters 4. He then appeared in the 5th, 6th, 7th, 8th installment, before taking a one movie break and returning in the 10th, 11th and 13th installment. He's in the latest installment." },
+  { id:"advik", name:"Advik", films:[], role:"Director, Ghostbusters 2",
+    youtube:["tanookitail715"],
+    bio:"He directed Ghostbusters 2, and also appeared as a cameo. He also took part in a few films that were deleted/scrapped." },
+  { id:"joshua", name:"Joshua", films:["gb-return"],
+    bio:"Joshua has appeared 2 times throughout the franchise's course, with the first one being in Ghostbusters 6, and Ghostbusters: Return From 24'. He's not been seen since." },
+  { id:"jordan", name:"Jordan", films:["gb-return"],
+    bio:"Jordan has also appeared 2 times throughout the franchise's course, with the first one being in Ghostbusters 6, and Ghostbusters: Return From 24'. He had a unique scene in Return From 24' where he threw magical swords at the monster instead of a typical proton beam." },
+  { id:"aarav", name:"Aarav", films:["gb-new-guy","ps-3"],
+    bio:"He's appeared twice in the Ghostbusters franchise, once in Ghostbusters 6 and the other in Ghostbusters: New Guy. He was also one of the main characters in one of our most popular movies, Pool Shark 3." },
+  { id:"saurish", name:"Saurish", films:[],
+    bio:"He's just a guy. Don't question it. And we did not tell him to say \"We will rule the world for our masters\". It is still a mystery to this day why he said that and what it means." },
+  { id:"suveer", name:"Suveer", films:[],
+    bio:"He's taken part once in the Ghostbusters franchise, famous for his \"Wait, I'm dead\" line. He appeared in a scrapped Ghostbusters 9 (it was scrapped because he stole our equipment)." },
+  { id:"samarth", name:"Samarth", films:[],
+    bio:"Apearing in brief moments, this dude ruined Ghostbusters 6 by bieng crazy and distracting others." },
+  { id:"greg", name:"Greg", films:[],
+    bio:"He took part with samarth to destroy Ghostbusters 6." },
+  { id:"viaan", name:"Viaan", films:[],
+    bio:"The guy who got squished in Ghostbusters 6." },
+  { id:"abheevir", name:"Abheevir", films:["gb-return","gb-united","gb-haunting-hour"],
+    bio:"His first appearance was in Ghostbusters 4, and second in Ghostbusters: The Return. He's been in many cancelled films, and made his next few appearences in Ghostbusters: A Killer's Day, Ghostbusters: United and Ghostbusters: Haunting Hour." }
+];
+
 /* Most popular films, in order. */
 const TOP5 = ["ps-2", "ps-1", "ps-3", "dbd-1", "gb-return"];
 
@@ -313,7 +375,7 @@ function metaHTML(f){
 
 function render(){
   // nav
-  $('#nav').innerHTML = `<a href="#row-top">Top 5</a>` + FRANCHISES.map(F => `<a href="#row-${F.id}">${esc(F.name)}</a>`).join('');
+  $('#nav').innerHTML = `<a href="#row-top">Top 5</a>` + FRANCHISES.map(F => `<a href="#row-${F.id}">${esc(F.name)}</a>`).join('') + `<a href="#row-actors">Actors</a>`;
 
   // hero: newest film
   const feat = featured();
@@ -352,7 +414,9 @@ function render(){
           </button>`).join('')}</div>`
       : `<div class="empty"><strong>No ${esc(F.name)} films uploaded yet.</strong>New entries in this franchise will appear here as they premiere.</div>`;
     return `<section class="row" id="row-${F.id}">${head}${body}</section>`;
-  }).join('');
+  }).join('') + `<section class="row" id="row-actors">
+      <div class="row-h"><span class="tag" style="background:var(--hound)"></span><h2>Actors</h2><p>${ACTORS.length} people · tap to see their films</p></div>
+      <div class="track">${ACTORS.map(actorChip).join('')}</div></section>`;
 
   if (feat && feat.youtube){
     const im = $('#still');
@@ -398,6 +462,8 @@ function openFilm(id){
     <div class="sheet-body">
       ${f.description ? `<div class="sec"><h4>Synopsis</h4><p>${esc(f.description)}</p></div>` : ''}
       ${f.lore ? `<div class="sec"><h4>Lore</h4><p>${esc(f.lore)}</p></div>` : ''}
+      ${(() => { const c = ACTORS.filter(a => a.films.includes(f.id));
+        return c.length ? `<div class="sec"><h4>Cast</h4><div class="cast">${c.map(actorChip).join('')}</div></div>` : ''; })()}
       ${f.youtube ? rateHTML(f) : ''}
       <div class="sec"><dl class="facts">${facts.map(([k,v]) => `<div><dt>${esc(k)}</dt><dd>${v}</dd></div>`).join('')}</dl></div>
       ${maxN > 1 ? `<div class="sec"><h4>${esc(F.name)} timeline</h4><div class="timeline">${
@@ -408,7 +474,40 @@ function openFilm(id){
             : `<span class="${n===f.installment?'cur':''}" title="${s?esc(s.title):'Part '+n}">${n}</span>`;
         }).join('')}</div></div>` : ''}
     </div>`;
-  lastFocus = document.activeElement;
+  if (!$('#sheet').classList.contains('on')) lastFocus = document.activeElement;
+  $('#sheet').scrollTop = 0;
+  $('#scrim').classList.add('on'); $('#sheet').classList.add('on');
+  document.body.style.overflow = 'hidden';
+  $('#close').focus({preventScroll:true});
+}
+function actorChip(a){
+  const n = a.films.length;
+  const sub = a.role || (n ? `${n} ${n === 1 ? 'film' : 'films'}` : '');
+  return `<button class="actor" data-actor="${a.id}" aria-label="${esc(a.name)}">
+    <div class="face"><img src="cast/${a.id}.jpg" alt="" loading="lazy"></div>
+    <div><b>${esc(a.name)}</b>${sub ? `<small>${esc(sub)}</small>` : ''}</div></button>`;
+}
+function openActor(id){
+  const a = ACTORS.find(x => x.id === id); if (!a) return;
+  const films = a.films.map(fid => FILMS.find(f => f.id === fid)).filter(Boolean);
+  $('#sheet').innerHTML = `
+    <div class="sheet-top person">
+      <button class="close" id="close" aria-label="Close"><svg width="16" height="16" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2"><path d="M3 3l10 10M13 3L3 13"/></svg></button>
+      <div class="face"><img src="cast/${a.id}.jpg" alt="${esc(a.name)}"></div>
+      <div class="sheet-info">
+        <div class="eyebrow"><span class="dot"></span>${esc(a.role || 'Actor')}</div>
+        <h3 id="sheet-title">${esc(a.name)}</h3>
+        ${a.youtube ? `<div class="links">${a.youtube.map(h => `<a href="https://www.youtube.com/@${encodeURIComponent(h)}" target="_blank" rel="noopener">YouTube @${esc(h)}</a>`).join('')}</div>` : ''}
+      </div>
+    </div>
+    <div class="sheet-body">
+      <div class="sec"><h4>About</h4><p>${esc(a.bio)}</p></div>
+      <div class="sec"><h4>Appears in</h4>${films.length
+        ? `<div class="mini">${films.map(f => `<button class="card" data-open="${f.id}" aria-label="${esc(f.title)}"><div class="poster">${posterHTML(f)}</div><div class="cap"><span>${esc(f.short || f.title)}</span></div></button>`).join('')}</div>`
+        : `<p>None of the films on this site yet.</p>`}</div>
+    </div>`;
+  if (!$('#sheet').classList.contains('on')) lastFocus = document.activeElement;
+  $('#sheet').scrollTop = 0;
   $('#scrim').classList.add('on'); $('#sheet').classList.add('on');
   document.body.style.overflow = 'hidden';
   $('#close').focus({preventScroll:true});
@@ -423,6 +522,7 @@ document.addEventListener('click', e => {
   if (e.target.closest('#endskip')) { const ec = $('#endcard'); if (ec) ec.hidden = true; return; }
   const p = e.target.closest('[data-play]'); if (p) { playFilm(p.dataset.play); return; }
   if (e.target.closest('#pclose')) { closePlayer(); return; }
+  const ac = e.target.closest('[data-actor]'); if (ac) { openActor(ac.dataset.actor); return; }
   const o = e.target.closest('[data-open]'); if (o) { openFilm(o.dataset.open); return; }
   if (e.target.closest('#close') || e.target.id === 'scrim') closeFilm();
 });
