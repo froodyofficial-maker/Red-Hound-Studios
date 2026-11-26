@@ -268,12 +268,12 @@ const FRANCHISES = [
 /* ---------- Actors ----------
    From the Ghostbusters 'n' more cast page. films = ids of films above they appear in. */
 const ACTORS = [
-  { id:"raghuvir", name:"Raghuvir", films:["gb-severance","gb-united","gb-return","gb-new-guy","gb-haunting-hour"],
+  { id:"raghuvir", name:"Raghuvir", films:["gb-1","gb-severance","gb-united","gb-return","gb-new-guy","gb-haunting-hour"],
     youtube:["stuffisrealgood"],
     bio:"The creator of it all. Ghostbusters 1 started out as something we wanted to do for fun. Raghuvir has starred in every single Ghostbusters movie, and if he doesn't appear in some, that means he is the cameraman or director. Now we're running a fully operational business!" },
-  { id:"yash", name:"Yash", films:[],
+  { id:"yash", name:"Yash", films:["gb-1"],
     bio:"Yash is a former member of the Ghostbusters, and last appeared Ghostbusters 3, but in terms of deleted movies, he was in the deleted version of Ghostbusters 6 too. He shifted to chennai, breaking hearts of many fans. You will be remembered (for your goofyness, and for your looking back!)" },
-  { id:"abeer", name:"Abeer", films:["gb-severance","gb-united","gb-return"],
+  { id:"abeer", name:"Abeer", films:["gb-1","gb-severance","gb-united","gb-return"],
     bio:"He's a goofy and fun guy, that gave the films a sense of humor and provided a few ideas (like the easter egg in GB 1). His smiling does not help, though. \"That looks like my grandpa, dude!\" Abeer has appeared in every Ghostbusters film apart from Ghostbusters 4, Ghostbusters: New Guy and Ghostbusters: Haunting Hour." },
   { id:"abhiraj", name:"Abhiraj", films:["gb-united"],
     bio:"Was the camerman for the first ever Ghostbusters movie. He made his first appearance in Ghostbusters 4, and continued to appear in the movies until Ghostbusters 6. 4 movies later, he stars as one of the main characters in the 10th movie, and then never to be seen again later." },
@@ -312,6 +312,10 @@ const TOP5 = ["ps-2", "ps-1", "ps-3", "dbd-1", "gb-return"];
 
 const FILMS = [
   /* Ghostbusters */
+  { id:"gb-1", franchise:"ghostbusters", installment:1,
+    title:"Ghostbusters", short:"Ghostbusters",
+    youtube:"3-Fy9avW1Fs", poster:"posters/ghostbusters.png",
+    imdb:"https://www.imdb.com/title/tt37317422/", rating:4.3, runtime:"2m 28s" },
   { id:"gb-severance", franchise:"ghostbusters", installment:9,
     title:"Ghostbusters: Severance", short:"Severance",
     youtube:"E6P3YpHc-hM", poster:"posters/ghostbusters-severance.webp",
