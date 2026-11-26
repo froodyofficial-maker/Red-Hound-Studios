@@ -2,7 +2,14 @@
 
 Fan-made films from Red Hound Studios, with a streaming-style catalogue, an in-page player and viewer ratings.
 
-The whole site is `index.html` plus the `posters/` folder. Films are listed in the `FILMS` array near the top of the script in `index.html`.
+The whole site is `index.html` plus the `posters/` and `cast/` folders. Films, franchises and actors are listed in the `FILMS`, `FRANCHISES` and `ACTORS` arrays near the top of the script in `index.html`.
+
+Every film, franchise and actor has its own page:
+
+- `#/film/pool-shark-2` (the film's title in lowercase, with dashes)
+- `#/franchise/ghostbusters`
+- `#/actor/jordan`
+- `#/actors` (everyone)
 
 ## Viewer ratings
 
