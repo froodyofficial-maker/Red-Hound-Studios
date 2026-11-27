@@ -120,22 +120,14 @@ main>*{min-width:0;scroll-margin-top:calc(72px + env(safe-area-inset-top,0px))}
 .upd:hover{background:#261f1d}
 .upd.new{color:var(--fg);box-shadow:inset 3px 0 0 var(--hound)}
 .when{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
-.soon{flex:0 0 auto;width:min(560px,86vw);display:grid;grid-template-columns:150px minmax(0,1fr);gap:20px;align-items:center;padding:14px;border-radius:12px;background:linear-gradient(120deg,rgba(211,38,46,.16),rgba(255,255,255,.03));box-shadow:inset 0 0 0 1px var(--line);scroll-snap-align:start;transition:transform .45s var(--ease),box-shadow .35s}
-.soon:hover{transform:translateY(-4px);box-shadow:inset 0 0 0 1px var(--hound),0 20px 50px rgba(0,0,0,.5)}
-.soon>.poster{aspect-ratio:2/3;border-radius:8px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.5)}
-.soon-body{display:grid;gap:8px;justify-items:start;min-width:0}
-.soon-t{font-family:var(--display);font-size:clamp(28px,3vw,38px);line-height:.95;letter-spacing:.02em;text-decoration:none}
-.soon-t:hover{color:#fff}
-.soon-r{font-size:13px;font-weight:700;color:var(--muted)}
-.soon-body p{margin:0;font-size:13px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .soon-chip{background:var(--hound);border-color:var(--hound);color:#fff;font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:11px}
+.soon-tag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:var(--hound);padding:2px 6px;border-radius:4px;white-space:nowrap;line-height:1.4}
 .btn.follow{padding:10px 18px;font-size:14px}
 .btn.follow.on{background:var(--hound);color:#fff}
 .ulist{list-style:none;margin:0;padding:0;display:grid;gap:14px;max-width:68ch;border-left:2px solid var(--line)}
 .ulist li{padding-left:18px;position:relative;display:grid;gap:4px}
 .ulist li::before{content:"";position:absolute;left:-6px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--hound)}
 .ulist p{margin:0;color:var(--muted)}
-@media (max-width:520px){.soon{grid-template-columns:100px minmax(0,1fr);gap:14px}}
 .empty{margin:18px var(--gutR) 0 var(--gut);border:1px dashed var(--line);border-radius:8px;padding:28px 22px;color:var(--muted);font-size:14px;max-width:520px;display:grid;gap:4px}
 .empty strong{color:var(--fg);font-size:15px}
 
@@ -425,6 +417,9 @@ const UPCOMING = FILMS.filter(f => f.upcoming);
 ACTORS.forEach(a => { if (a.films === 'all') a.films = RELEASED.map(f => f.id); a.crew = a.crew || []; });
 const byInst = (a, b) => (a.installment || 0) - (b.installment || 0);
 const filmsOf = F => RELEASED.filter(f => f.franchise === F.id).sort(byInst);
+/* Story order for rows: prequels first, then by part number, unnumbered upcoming films last. */
+const storyKey = f => f.tag === 'Prequel' ? 0 : (f.installment ?? 999);
+const timelineOf = F => FILMS.filter(f => f.franchise === F.id).sort((a, b) => storyKey(a) - storyKey(b));
 const castOf = f => ACTORS.filter(a => a.films.includes(f.id));
 const crewOf = f => ACTORS.flatMap(a => a.crew.filter(c => c.film === f.id).map(c => ({ a, role:c.role })));
 const urlFilm = f => `#/film/${f.slug}`;
@@ -466,7 +461,8 @@ function titleHTML(t){
   return `${lead ? `<small>${esc(lead)}</small>` : ''}${esc(rest)}`;
 }
 function cardHTML(f, cap = 'part'){
-  const right = cap === 'views' ? (f.views ? f.views.toLocaleString() + ' views' : '')
+  const right = f.upcoming ? `<b class="soon-tag">Coming soon</b>`
+              : cap === 'views' ? (f.views ? f.views.toLocaleString() + ' views' : '')
               : cap === 'franchise' ? esc(fr(f.franchise).name)
               : (f.installment ? '#' + f.installment : '');
   return `<a class="card" href="${urlFilm(f)}" aria-label="${esc(f.title)}">
@@ -521,23 +517,11 @@ const Follow = {
       <a class="upd${x.unread ? ' new' : ''}" href="${urlFilm(x.f)}">
         <span class="when">${esc(fmtDate(x.u.date))} · ${esc(x.f.short || x.f.title)}</span>${esc(x.u.text)}</a>`).join('')
       : `<p class="none">${this.ids.size ? 'No updates yet.' : 'Follow an upcoming film to get its updates here.'}</p>`}
-      ${UPCOMING.length ? `<a class="see" href="#/#row-soon" style="margin:0">Coming soon ›</a>` : ''}`;
+`;
   }
 };
 const fmtDate = d => new Date(d + 'T12:00:00').toLocaleDateString(undefined, { day:'numeric', month:'short', year:'numeric' });
 const followBtn = f => `<button class="btn ghost follow" data-follow="${f.id}" aria-pressed="false">+ Follow</button>`;
-function soonCard(f){
-  return `<div class="soon">
-    <a class="poster" href="${urlFilm(f)}" aria-label="${esc(f.title)}">${posterHTML(f)}</a>
-    <div class="soon-body">
-      <span class="chip soon-chip">Coming soon</span>
-      <a href="${urlFilm(f)}" class="soon-t">${esc(f.title)}</a>
-      <span class="soon-r">${[f.tag, f.installment && `Part ${f.installment}`, f.release].filter(Boolean).map(esc).join(' · ')}</span>
-      ${f.description ? `<p>${esc(f.description)}</p>` : ''}
-      <div class="actions">${followBtn(f)}</div>
-    </div></div>`;
-}
-
 /* ---------- Hero ---------- */
 let heroNum = '';
 function setHero({ still = null, soft = false, num = '', cls = '', html }){
@@ -594,15 +578,14 @@ function pageHome(){
             <div class="cap"><span>${esc(f.short || f.title)}</span><span class="views">${f.views ? f.views.toLocaleString() + ' views' : ''}</span></div></div>
         </a>`).join('')}</div></section>` : '';
   const frRows = FRANCHISES.map(F => {
-    const list = filmsOf(F);
+    const list = timelineOf(F), n = list.filter(f => !f.upcoming).length, soon = list.length - n;
     return `<div style="--tagc:${F.glow}">${rowHTML(`row-${F.id}`, F.name,
-      `${plural(list.length, 'film')}${F.blurb ? ' · ' + esc(F.blurb) : ''}`,
+      `${plural(n, 'film')}${soon ? ` · ${soon} coming soon` : ''}${F.blurb ? ' · ' + esc(F.blurb) : ''}`,
       list.length ? track(list.map(f => cardHTML(f))) : `<div class="empty"><strong>No ${esc(F.name)} films uploaded yet.</strong></div>`,
       F.popular ? '<span class="pop">★ Most popular franchise</span>' : '', seeAll(urlFr(F), 'Franchise page'))}</div>`;
   }).join('');
   const actorsRow = rowHTML('row-actors', 'Actors', `${ACTORS.length} people`, track(ACTORS.map(a => actorChip(a))), '', seeAll('#/actors'));
-  const soonRow = UPCOMING.length ? rowHTML('row-soon', 'Coming soon', 'Follow to get updates', `<div class="track">${UPCOMING.map(soonCard).join('')}</div>`) : '';
-  $('#rows').innerHTML = topRow + soonRow + frRows + actorsRow;
+  $('#rows').innerHTML = topRow + frRows + actorsRow;
   return 'Red Hound Studios';
 }
 
@@ -625,7 +608,7 @@ function pageUpcoming(f){
       ${ups.length ? `<ol class="ulist">${ups.map(u => `<li><span class="when">${esc(fmtDate(u.date))}</span><p>${esc(u.text)}</p></li>`).join('')}</ol>` : '<p class="none">No updates yet.</p>'}
       <p class="hint">Follow this film and new updates will show under the bell at the top of the site.</p>
       ${timelineHTML(f, F)}</section>
-    ${list.length ? `<div style="--tagc:${F.glow}">${rowHTML('', `Catch up on ${F.name}`, plural(list.length, 'film'), track(list.map(x => cardHTML(x))), '', seeAll(urlFr(F)))}</div>` : ''}`;
+    ${list.length ? `<div style="--tagc:${F.glow}">${rowHTML('', `More ${F.name}`, '', track(timelineOf(F).filter(x => x.id !== f.id).map(x => cardHTML(x))), '', seeAll(urlFr(F)))}</div>` : ''}`;
   return `${f.title} · Red Hound Studios`;
 }
 
@@ -654,7 +637,7 @@ function pageFilm(f){
     f.runtime && ['Runtime', esc(f.runtime)],
     f.views && ['Views', f.views.toLocaleString()]
   ].filter(Boolean);
-  const others = list.filter(x => x.id !== f.id);
+  const others = timelineOf(F).filter(x => x.id !== f.id);
 
   $('#rows').innerHTML = `
     ${f.description ? `<section class="pg row"><h2>Synopsis</h2><p class="lead">${esc(f.description)}</p></section>` : ''}
@@ -719,9 +702,8 @@ function pageFranchise(F){
       ${latest ? `<button class="btn play" data-play="${latest.id}">${playIcon}Play latest</button><a class="btn ghost" href="${urlFilm(latest)}">${infoIcon}${esc(latest.short || latest.title)}</a>` : ''}
     </div>` });
   $('#rows').innerHTML = `
-    <section class="row" style="--tagc:${F.glow}"><div class="row-h"><span class="tag" style="background:${F.glow}"></span><h2>All films</h2><p>In order</p></div>
-      <div class="grid">${list.map(f => cardHTML(f)).join('')}</div></section>
-    ${UPCOMING.some(f => f.franchise === F.id) ? rowHTML('', 'Coming soon', 'Follow to get updates', `<div class="track">${UPCOMING.filter(f => f.franchise === F.id).map(soonCard).join('')}</div>`) : ''}
+    <section class="row" style="--tagc:${F.glow}"><div class="row-h"><span class="tag" style="background:${F.glow}"></span><h2>All films</h2><p>In story order</p></div>
+      <div class="grid">${timelineOf(F).map(f => cardHTML(f)).join('')}</div></section>
     ${cast.length ? rowHTML('', 'Cast', plural(cast.length, 'actor'), track(cast.map(a => actorChip(a)))) : ''}`;
   return `${F.name} · Red Hound Studios`;
 }
@@ -744,7 +726,6 @@ function resolve(h){
   if ((m = /^#\/actor\/([\w-]+)$/.exec(h))) { const a = ACTORS.find(x => x.id === m[1]); if (a) return () => pageActor(a); }
   if ((m = /^#\/franchise\/([\w-]+)$/.exec(h))) { const F = fr(m[1]); if (F) return () => pageFranchise(F); }
   if (h === '#/actors') return pageActors;
-  if (h === '#/#row-soon') return () => { const t = pageHome(); requestAnimationFrame(() => { const el = $('#row-soon'); el && scrollTo(0, el.getBoundingClientRect().top + scrollY - 80); }); return t; };
   return pageHome;
 }
 const history_ = [], scrollMem = {};
