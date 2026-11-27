@@ -198,6 +198,7 @@ a.card{display:block}
 .timeline span,.timeline a{display:inline-block;border:0;cursor:default;min-width:34px;text-align:center;padding:6px 0;border-radius:4px;font-size:12px;font-weight:800;background:var(--surface);color:var(--dim);font-variant-numeric:tabular-nums}
 .timeline .has{color:var(--fg);box-shadow:inset 0 0 0 1px var(--line);cursor:pointer;transition:background .2s,transform .25s var(--ease)}
 .timeline .has:hover{background:var(--hound-deep);transform:translateY(-2px)}
+.timeline a.soon{box-shadow:inset 0 0 0 1px var(--hound);border:1px dashed transparent;color:var(--muted)}
 .timeline span.cur{background:var(--hound);color:#fff}
 
 /* Player */
@@ -374,7 +375,7 @@ const FILMS = [
     youtube:"EekKzH1vIvY", poster:"posters/ghostbusters-haunting-hour.png",
     rating:3.5, year:"May 2026", runtime:"2m 9s" },
 
-  { id:"gb-last-dance", franchise:"ghostbusters", upcoming:true,
+  { id:"gb-last-dance", franchise:"ghostbusters", upcoming:true, installment:15,
     title:"Ghostbusters: The Last Dance", short:"The Last Dance",
     poster:"posters/ghostbusters-the-last-dance.png", release:"Late 2026 – early 2027",
     description:"Ghostbusters: The Last Dance will be the final installment in the Ghostbusters franchise. A release is hoped for late 2026 to early 2027.",
@@ -382,6 +383,11 @@ const FILMS = [
     updates:[
       { date:"2026-11-27", text:"Announced as the final installment in the Ghostbusters franchise. A release is hoped for late 2026 to early 2027." }
     ] },
+
+  { id:"gb-dreamcore", franchise:"ghostbusters", upcoming:true, tag:"Prequel",
+    title:"Ghostbusters: Dreamcore", short:"Dreamcore",
+    poster:"posters/ghostbusters-dreamcore.webp", release:"2027",
+    updates:[] },
 
   /* Pool Shark */
   { id:"ps-1", franchise:"pool-shark", installment:1,
@@ -526,7 +532,7 @@ function soonCard(f){
     <div class="soon-body">
       <span class="chip soon-chip">Coming soon</span>
       <a href="${urlFilm(f)}" class="soon-t">${esc(f.title)}</a>
-      ${f.release ? `<span class="soon-r">${esc(f.release)}</span>` : ''}
+      <span class="soon-r">${[f.tag, f.installment && `Part ${f.installment}`, f.release].filter(Boolean).map(esc).join(' · ')}</span>
       ${f.description ? `<p>${esc(f.description)}</p>` : ''}
       <div class="actions">${followBtn(f)}</div>
     </div></div>`;
@@ -552,6 +558,19 @@ function setHero({ still = null, soft = false, num = '', cls = '', html }){
   $('#hero').innerHTML = html;
 }
 const ytStill = id => [`https://i.ytimg.com/vi/${id}/maxresdefault.jpg`, `https://i.ytimg.com/vi/${id}/hqdefault.jpg`];
+
+function timelineHTML(f, F){
+  const all = FILMS.filter(x => x.franchise === F.id && x.installment);
+  const maxN = Math.max(0, ...all.map(x => x.installment));
+  if (maxN < 2) return '';
+  return `<div class="sec"><h4>${esc(F.name)} timeline</h4><div class="timeline">${
+    Array.from({length: maxN}, (_, i) => i + 1).map(n => {
+      const x = all.find(y => y.installment === n), soon = x && x.upcoming ? ' soon' : '';
+      return x && n !== f.installment
+        ? `<a class="has${soon}" href="${urlFilm(x)}" title="${esc(x.title)}${soon ? ' (coming soon)' : ''}" style="text-decoration:none">${n}</a>`
+        : `<span class="${n === f.installment ? 'cur' : ''}" title="${x ? esc(x.title) : 'Part ' + n}">${n}</span>`;
+    }).join('')}</div></div>`;
+}
 
 /* ---------- Pages ---------- */
 function pageHome(){
@@ -595,7 +614,7 @@ function pageUpcoming(f){
       <div class="info">
         <div class="crumbs"><a href="#/">Home</a><i>/</i><a href="${urlFr(F)}">${esc(F.name)}</a><i>/</i><span>Coming soon</span></div>
         <h1 class="t2" tabindex="-1">${titleHTML(f.title)}</h1>
-        <div class="meta"><a class="chip" href="${urlFr(F)}" style="text-decoration:none">${esc(F.name)}</a><span class="chip soon-chip">Coming soon</span>${f.release ? `<span>${esc(f.release)}</span>` : ''}</div>
+        <div class="meta"><a class="chip" href="${urlFr(F)}" style="text-decoration:none">${esc(F.name)}</a><span class="chip soon-chip">Coming soon</span>${f.tag ? `<span class="chip">${esc(f.tag)}</span>` : ''}${f.installment ? `<span>Part ${f.installment}</span>` : ''}${f.release ? `<span>${esc(f.release)}</span>` : ''}</div>
         <div class="actions">${followBtn(f)}</div>
       </div>
     </div>` });
@@ -604,7 +623,8 @@ function pageUpcoming(f){
     ${f.description ? `<section class="pg row"><h2>About</h2><p class="lead">${esc(f.description)}</p></section>` : ''}
     <section class="pg row"><h2>Updates</h2>
       ${ups.length ? `<ol class="ulist">${ups.map(u => `<li><span class="when">${esc(fmtDate(u.date))}</span><p>${esc(u.text)}</p></li>`).join('')}</ol>` : '<p class="none">No updates yet.</p>'}
-      <p class="hint">Follow this film and new updates will show under the bell at the top of the site.</p></section>
+      <p class="hint">Follow this film and new updates will show under the bell at the top of the site.</p>
+      ${timelineHTML(f, F)}</section>
     ${list.length ? `<div style="--tagc:${F.glow}">${rowHTML('', `Catch up on ${F.name}`, plural(list.length, 'film'), track(list.map(x => cardHTML(x))), '', seeAll(urlFr(F)))}</div>` : ''}`;
   return `${f.title} · Red Hound Studios`;
 }
@@ -612,7 +632,6 @@ function pageUpcoming(f){
 function pageFilm(f){
   if (f.upcoming) return pageUpcoming(f);
   const F = fr(f.franchise), list = filmsOf(F), cast = castOf(f), crew = crewOf(f);
-  const maxN = Math.max(...list.map(x => x.installment || 0));
   setHero({ still: f.youtube ? ytStill(f.youtube) : (f.poster || null), soft: !f.youtube, num: f.installment, cls: 'sub', html: `
     <div class="film-head">
       <div class="poster">${posterHTML(f)}</div>
@@ -645,13 +664,7 @@ function pageFilm(f){
     <section class="pg row"><div class="split">
       <div><h2>Details</h2><dl class="facts">${facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${v}</dd></div>`).join('')}</dl></div>
       <div>${f.youtube ? rateHTML(f) : ''}
-        ${maxN > 1 ? `<div class="sec"><h4>${esc(F.name)} timeline</h4><div class="timeline">${
-          Array.from({length: maxN}, (_, i) => i + 1).map(n => {
-            const x = list.find(y => y.installment === n);
-            return x && n !== f.installment
-              ? `<a class="has" href="${urlFilm(x)}" title="${esc(x.title)}" style="text-decoration:none">${n}</a>`
-              : `<span class="${n === f.installment ? 'cur' : ''}" title="${x ? esc(x.title) : 'Part ' + n}">${n}</span>`;
-          }).join('')}</div></div>` : ''}
+        ${timelineHTML(f, F)}
       </div></div></section>
     ${others.length ? `<div style="--tagc:${F.glow}">${rowHTML('', `More ${F.name}`, '', track(others.map(x => cardHTML(x))), '', seeAll(urlFr(F)))}</div>` : ''}`;
   return `${f.title} · Red Hound Studios`;
