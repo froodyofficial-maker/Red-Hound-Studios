@@ -42,7 +42,7 @@ button{font:inherit;color:inherit}
 .nav{display:flex;gap:18px;font-size:13px;font-weight:600;color:var(--muted);flex-wrap:wrap}
 .nav a{text-decoration:none;transition:color .2s}
 .nav a:hover,.nav a.cur{color:var(--fg)}
-@media (max-width:640px){.bar{flex-wrap:wrap;gap:10px 20px}.nav{order:2;width:100%;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:20px;font-size:14px;padding-bottom:2px}.nav::-webkit-scrollbar{display:none}.nav a{white-space:nowrap}.hero{margin-top:-96px}.hero-in{padding-top:140px}}
+@media (max-width:640px){.bar{flex-wrap:wrap;gap:10px 20px}.updates{top:calc(104px + env(safe-area-inset-top,0px))}.nav{order:2;width:100%;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:20px;font-size:14px;padding-bottom:2px}.nav::-webkit-scrollbar{display:none}.nav a{white-space:nowrap}.hero{margin-top:-96px}.hero-in{padding-top:140px}}
 
 /* Hero */
 .hero{position:relative;margin-top:-64px;min-height:min(78vh,680px);display:flex;align-items:flex-end;overflow:hidden;isolation:isolate}
@@ -110,6 +110,32 @@ main>*{min-width:0;scroll-margin-top:calc(72px + env(safe-area-inset-top,0px))}
 .links{display:flex;gap:8px;flex-wrap:wrap}
 .links a{font-size:13px;font-weight:700;text-decoration:none;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px var(--line);transition:background .2s}
 .links a:hover{background:var(--hound-deep)}
+.bell{margin-left:auto;position:relative;flex:0 0 auto;width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.07);display:grid;place-items:center;cursor:pointer;transition:background .2s,transform .25s var(--ease)}
+.bell:hover{background:rgba(255,255,255,.14);transform:rotate(-8deg)}
+.bell .n{position:absolute;top:-3px;right:-3px;min-width:19px;height:19px;padding:0 5px;border-radius:10px;background:var(--hound);color:#fff;font-size:11px;font-weight:800;display:grid;place-items:center;box-shadow:0 0 0 2px var(--bg)}
+.updates{position:fixed;z-index:70;top:calc(66px + env(safe-area-inset-top,0px));right:var(--gutR);width:min(380px,calc(100vw - 32px));max-height:70vh;overflow:auto;background:var(--bg-2);border-radius:12px;box-shadow:0 30px 80px rgba(0,0,0,.7),0 0 0 1px var(--line);padding:16px;display:grid;gap:10px;opacity:0;transform:translateY(-8px) scale(.98);transform-origin:top right;pointer-events:none;transition:opacity .25s var(--ease),transform .3s var(--ease)}
+.updates.on{opacity:1;transform:none;pointer-events:auto}
+.updates h4{margin:0;font-size:11px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.upd{display:grid;gap:4px;text-decoration:none;padding:10px 12px;border-radius:8px;background:var(--surface);font-size:14px;color:var(--muted);transition:background .2s}
+.upd:hover{background:#261f1d}
+.upd.new{color:var(--fg);box-shadow:inset 3px 0 0 var(--hound)}
+.when{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.soon{flex:0 0 auto;width:min(560px,86vw);display:grid;grid-template-columns:150px minmax(0,1fr);gap:20px;align-items:center;padding:14px;border-radius:12px;background:linear-gradient(120deg,rgba(211,38,46,.16),rgba(255,255,255,.03));box-shadow:inset 0 0 0 1px var(--line);scroll-snap-align:start;transition:transform .45s var(--ease),box-shadow .35s}
+.soon:hover{transform:translateY(-4px);box-shadow:inset 0 0 0 1px var(--hound),0 20px 50px rgba(0,0,0,.5)}
+.soon>.poster{aspect-ratio:2/3;border-radius:8px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.soon-body{display:grid;gap:8px;justify-items:start;min-width:0}
+.soon-t{font-family:var(--display);font-size:clamp(28px,3vw,38px);line-height:.95;letter-spacing:.02em;text-decoration:none}
+.soon-t:hover{color:#fff}
+.soon-r{font-size:13px;font-weight:700;color:var(--muted)}
+.soon-body p{margin:0;font-size:13px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.soon-chip{background:var(--hound);border-color:var(--hound);color:#fff;font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:11px}
+.btn.follow{padding:10px 18px;font-size:14px}
+.btn.follow.on{background:var(--hound);color:#fff}
+.ulist{list-style:none;margin:0;padding:0;display:grid;gap:14px;max-width:68ch;border-left:2px solid var(--line)}
+.ulist li{padding-left:18px;position:relative;display:grid;gap:4px}
+.ulist li::before{content:"";position:absolute;left:-6px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--hound)}
+.ulist p{margin:0;color:var(--muted)}
+@media (max-width:520px){.soon{grid-template-columns:100px minmax(0,1fr);gap:14px}}
 .empty{margin:18px var(--gutR) 0 var(--gut);border:1px dashed var(--line);border-radius:8px;padding:28px 22px;color:var(--muted);font-size:14px;max-width:520px;display:grid;gap:4px}
 .empty strong{color:var(--fg);font-size:15px}
 
@@ -226,7 +252,12 @@ footer{padding:24px var(--gutR) 40px var(--gut);border-top:1px solid var(--line)
     <b>RED HOUND</b><span>STUDIOS</span>
   </a>
   <nav class="nav" id="nav"></nav>
+  <button class="bell" id="bell" aria-label="Updates" aria-expanded="false" aria-controls="updates">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg>
+    <span class="n" hidden>0</span>
+  </button>
 </header>
+<div class="updates" id="updates" role="region" aria-label="Updates"></div>
 
 <div id="app">
 <section class="hero" id="top">
@@ -260,15 +291,17 @@ footer{padding:24px var(--gutR) 40px var(--gut);border-top:1px solid var(--line)
              which viewer ratings then pull up or down.
    Optional: poster, imdb, year, runtime, rating, genres[], description, lore. */
 const FRANCHISES = [
-  { id:"pool-shark",       name:"Pool Shark",       glow:"#2fb7e0", blurb:"", popular:true },
   { id:"ghostbusters",     name:"Ghostbusters",     glow:"#7ee06a", blurb:"Red Hound's longest-running series" },
+  { id:"pool-shark",       name:"Pool Shark",       glow:"#2fb7e0", blurb:"", popular:true },
   { id:"dead-by-daylight", name:"Dead by Daylight", glow:"#e8662f", blurb:"" }
 ];
 
 /* ---------- Actors ----------
-   From the Ghostbusters 'n' more cast page. films = ids of films above they appear in. */
+   From the Ghostbusters 'n' more cast page.
+   films = ids of films they appear in ("all" = every released film on the site).
+   crew  = behind-the-camera credits: [{ film, role }]. */
 const ACTORS = [
-  { id:"raghuvir", name:"Raghuvir", films:["gb-1","gb-severance","gb-united","gb-return","gb-new-guy","gb-haunting-hour"],
+  { id:"raghuvir", name:"Raghuvir Bhardwaj", films:"all",
     youtube:["stuffisrealgood"],
     bio:"The creator of it all. Ghostbusters 1 started out as something we wanted to do for fun. Raghuvir has starred in every single Ghostbusters movie, and if he doesn't appear in some, that means he is the cameraman or director. Now we're running a fully operational business!" },
   { id:"yash", name:"Yash", films:["gb-1"],
@@ -303,8 +336,10 @@ const ACTORS = [
     bio:"He took part with samarth to destroy Ghostbusters 6." },
   { id:"viaan", name:"Viaan", films:[],
     bio:"The guy who got squished in Ghostbusters 6." },
-  { id:"abheevir", name:"Abheevir", films:["gb-return","gb-united","gb-haunting-hour"],
-    bio:"His first appearance was in Ghostbusters 4, and second in Ghostbusters: The Return. He's been in many cancelled films, and made his next few appearences in Ghostbusters: A Killer's Day, Ghostbusters: United and Ghostbusters: Haunting Hour." }
+  { id:"abheevir", name:"Abheevir", films:["gb-united","gb-haunting-hour"],
+    bio:"His first appearance was in Ghostbusters 4, and second in Ghostbusters: The Return. He's been in many cancelled films, and made his next few appearences in Ghostbusters: A Killer's Day, Ghostbusters: United and Ghostbusters: Haunting Hour." },
+  { id:"kaviish", name:"Kaviish Mehta", films:["gb-return","gb-new-guy"],
+    crew:[{ film:"ps-3", role:"Cameraman" }] }
 ];
 
 /* Most popular films, in order. */
@@ -339,6 +374,15 @@ const FILMS = [
     youtube:"EekKzH1vIvY", poster:"posters/ghostbusters-haunting-hour.png",
     rating:3.5, year:"May 2026", runtime:"2m 9s" },
 
+  { id:"gb-last-dance", franchise:"ghostbusters", upcoming:true,
+    title:"Ghostbusters: The Last Dance", short:"The Last Dance",
+    poster:"posters/ghostbusters-the-last-dance.png", release:"Late 2026 – early 2027",
+    description:"Ghostbusters: The Last Dance will be the final installment in the Ghostbusters franchise. A release is hoped for late 2026 to early 2027.",
+    /* Followers see new entries here under the bell. Newest last. */
+    updates:[
+      { date:"2026-11-27", text:"Announced as the final installment in the Ghostbusters franchise. A release is hoped for late 2026 to early 2027." }
+    ] },
+
   /* Pool Shark */
   { id:"ps-1", franchise:"pool-shark", installment:1,
     title:"Pool Shark", short:"Pool Shark",
@@ -370,9 +414,13 @@ const playIcon = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v1
 const infoIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6M12 7.5v.5"/></svg>';
 const slugify = t => t.toLowerCase().replace(/['’]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 FILMS.forEach(f => { f.slug = slugify(f.title); });
+const RELEASED = FILMS.filter(f => !f.upcoming);
+const UPCOMING = FILMS.filter(f => f.upcoming);
+ACTORS.forEach(a => { if (a.films === 'all') a.films = RELEASED.map(f => f.id); a.crew = a.crew || []; });
 const byInst = (a, b) => (a.installment || 0) - (b.installment || 0);
-const filmsOf = F => FILMS.filter(f => f.franchise === F.id).sort(byInst);
+const filmsOf = F => RELEASED.filter(f => f.franchise === F.id).sort(byInst);
 const castOf = f => ACTORS.filter(a => a.films.includes(f.id));
+const crewOf = f => ACTORS.flatMap(a => a.crew.filter(c => c.film === f.id).map(c => ({ a, role:c.role })));
 const urlFilm = f => `#/film/${f.slug}`;
 const urlActor = a => `#/actor/${a.id}`;
 const urlFr = F => `#/franchise/${F.id}`;
@@ -419,9 +467,9 @@ function cardHTML(f, cap = 'part'){
     <div class="poster">${posterHTML(f)}</div>
     <div class="cap"><span>${esc(f.short || f.title)}</span><span>${right}</span></div></a>`;
 }
-function actorChip(a){
+function actorChip(a, subOverride){
   const n = a.films.length;
-  const sub = a.role || (n ? plural(n, 'film') : '');
+  const sub = subOverride || a.role || (n ? plural(n, 'film') : (a.crew.length ? 'Crew' : ''));
   return `<a class="actor" href="${urlActor(a)}" aria-label="${esc(a.name)}">
     <div class="face"><img src="cast/${a.id}.jpg" alt="" loading="lazy"></div>
     <div><b>${esc(a.name)}</b>${sub ? `<small>${esc(sub)}</small>` : ''}</div></a>`;
@@ -433,6 +481,56 @@ function rowHTML(id, title, sub, inner, extra = '', see = ''){
 }
 const track = items => `<div class="track">${items.join('')}</div>`;
 const seeAll = (href, label = 'See all') => `<a class="see" href="${href}">${label} ›</a>`;
+
+/* ---------- Following upcoming films ----------
+   Followed films and seen updates are remembered in this browser. */
+const Follow = {
+  ids: new Set(), seen: new Set(),
+  load(){ this.ids = new Set(ls.get('rh-follow', [])); this.seen = new Set(ls.get('rh-seen', [])); },
+  key: (f, u) => `${f.id}@${u.date}@${u.text.length}`,
+  save(){ ls.set('rh-follow', [...this.ids]); ls.set('rh-seen', [...this.seen]); },
+  toggle(id){
+    const f = FILMS.find(x => x.id === id); if (!f) return;
+    if (this.ids.has(id)) { this.ids.delete(id); toast(`Unfollowed ${f.short || f.title}`); }
+    else { this.ids.add(id); (f.updates || []).forEach(u => this.seen.add(this.key(f, u)));
+      toast(`Following ${f.short || f.title}. New updates appear under the bell.`); }
+    this.save(); this.paint();
+  },
+  feed(){
+    return FILMS.filter(f => this.ids.has(f.id)).flatMap(f => (f.updates || []).map(u => ({ f, u, unread: !this.seen.has(this.key(f, u)) })))
+      .sort((a, b) => b.u.date.localeCompare(a.u.date));
+  },
+  markRead(){ this.feed().forEach(x => this.seen.add(this.key(x.f, x.u))); this.save(); this.paint(); },
+  paint(){
+    const unread = this.feed().filter(x => x.unread).length;
+    const n = $('#bell .n'); n.textContent = unread; n.hidden = !unread;
+    $('#bell').setAttribute('aria-label', unread ? `Updates, ${unread} new` : 'Updates');
+    document.querySelectorAll('[data-follow]').forEach(b => {
+      const on = this.ids.has(b.dataset.follow);
+      b.classList.toggle('on', on); b.setAttribute('aria-pressed', on);
+      b.innerHTML = on ? '✓ Following' : '+ Follow';
+    });
+    const feed = this.feed();
+    $('#updates').innerHTML = `<h4>Updates</h4>${feed.length ? feed.map(x => `
+      <a class="upd${x.unread ? ' new' : ''}" href="${urlFilm(x.f)}">
+        <span class="when">${esc(fmtDate(x.u.date))} · ${esc(x.f.short || x.f.title)}</span>${esc(x.u.text)}</a>`).join('')
+      : `<p class="none">${this.ids.size ? 'No updates yet.' : 'Follow an upcoming film to get its updates here.'}</p>`}
+      ${UPCOMING.length ? `<a class="see" href="#/#row-soon" style="margin:0">Coming soon ›</a>` : ''}`;
+  }
+};
+const fmtDate = d => new Date(d + 'T12:00:00').toLocaleDateString(undefined, { day:'numeric', month:'short', year:'numeric' });
+const followBtn = f => `<button class="btn ghost follow" data-follow="${f.id}" aria-pressed="false">+ Follow</button>`;
+function soonCard(f){
+  return `<div class="soon">
+    <a class="poster" href="${urlFilm(f)}" aria-label="${esc(f.title)}">${posterHTML(f)}</a>
+    <div class="soon-body">
+      <span class="chip soon-chip">Coming soon</span>
+      <a href="${urlFilm(f)}" class="soon-t">${esc(f.title)}</a>
+      ${f.release ? `<span class="soon-r">${esc(f.release)}</span>` : ''}
+      ${f.description ? `<p>${esc(f.description)}</p>` : ''}
+      <div class="actions">${followBtn(f)}</div>
+    </div></div>`;
+}
 
 /* ---------- Hero ---------- */
 let heroNum = '';
@@ -483,13 +581,37 @@ function pageHome(){
       list.length ? track(list.map(f => cardHTML(f))) : `<div class="empty"><strong>No ${esc(F.name)} films uploaded yet.</strong></div>`,
       F.popular ? '<span class="pop">★ Most popular franchise</span>' : '', seeAll(urlFr(F), 'Franchise page'))}</div>`;
   }).join('');
-  const actorsRow = rowHTML('row-actors', 'Actors', `${ACTORS.length} people`, track(ACTORS.map(actorChip)), '', seeAll('#/actors'));
-  $('#rows').innerHTML = topRow + frRows + actorsRow;
+  const actorsRow = rowHTML('row-actors', 'Actors', `${ACTORS.length} people`, track(ACTORS.map(a => actorChip(a))), '', seeAll('#/actors'));
+  const soonRow = UPCOMING.length ? rowHTML('row-soon', 'Coming soon', 'Follow to get updates', `<div class="track">${UPCOMING.map(soonCard).join('')}</div>`) : '';
+  $('#rows').innerHTML = topRow + soonRow + frRows + actorsRow;
   return 'Red Hound Studios';
 }
 
+function pageUpcoming(f){
+  const F = fr(f.franchise), list = filmsOf(F);
+  setHero({ still: f.poster || null, soft: true, cls: 'sub', html: `
+    <div class="film-head">
+      <div class="poster">${posterHTML(f)}</div>
+      <div class="info">
+        <div class="crumbs"><a href="#/">Home</a><i>/</i><a href="${urlFr(F)}">${esc(F.name)}</a><i>/</i><span>Coming soon</span></div>
+        <h1 class="t2" tabindex="-1">${titleHTML(f.title)}</h1>
+        <div class="meta"><a class="chip" href="${urlFr(F)}" style="text-decoration:none">${esc(F.name)}</a><span class="chip soon-chip">Coming soon</span>${f.release ? `<span>${esc(f.release)}</span>` : ''}</div>
+        <div class="actions">${followBtn(f)}</div>
+      </div>
+    </div>` });
+  const ups = [...(f.updates || [])].reverse();
+  $('#rows').innerHTML = `
+    ${f.description ? `<section class="pg row"><h2>About</h2><p class="lead">${esc(f.description)}</p></section>` : ''}
+    <section class="pg row"><h2>Updates</h2>
+      ${ups.length ? `<ol class="ulist">${ups.map(u => `<li><span class="when">${esc(fmtDate(u.date))}</span><p>${esc(u.text)}</p></li>`).join('')}</ol>` : '<p class="none">No updates yet.</p>'}
+      <p class="hint">Follow this film and new updates will show under the bell at the top of the site.</p></section>
+    ${list.length ? `<div style="--tagc:${F.glow}">${rowHTML('', `Catch up on ${F.name}`, plural(list.length, 'film'), track(list.map(x => cardHTML(x))), '', seeAll(urlFr(F)))}</div>` : ''}`;
+  return `${f.title} · Red Hound Studios`;
+}
+
 function pageFilm(f){
-  const F = fr(f.franchise), list = filmsOf(F), cast = castOf(f);
+  if (f.upcoming) return pageUpcoming(f);
+  const F = fr(f.franchise), list = filmsOf(F), cast = castOf(f), crew = crewOf(f);
   const maxN = Math.max(...list.map(x => x.installment || 0));
   setHero({ still: f.youtube ? ytStill(f.youtube) : (f.poster || null), soft: !f.youtube, num: f.installment, cls: 'sub', html: `
     <div class="film-head">
@@ -518,7 +640,8 @@ function pageFilm(f){
   $('#rows').innerHTML = `
     ${f.description ? `<section class="pg row"><h2>Synopsis</h2><p class="lead">${esc(f.description)}</p></section>` : ''}
     ${f.lore ? `<section class="pg row"><h2>Lore</h2><p class="lead">${esc(f.lore)}</p></section>` : ''}
-    ${cast.length ? rowHTML('', 'Cast', plural(cast.length, 'actor'), track(cast.map(actorChip))) : ''}
+    ${cast.length ? rowHTML('', 'Cast', plural(cast.length, 'actor'), track(cast.map(a => actorChip(a)))) : ''}
+    ${crew.length ? rowHTML('', 'Crew', '', track(crew.map(c => actorChip(c.a, c.role)))) : ''}
     <section class="pg row"><div class="split">
       <div><h2>Details</h2><dl class="facts">${facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${v}</dd></div>`).join('')}</dl></div>
       <div>${f.youtube ? rateHTML(f) : ''}
@@ -537,6 +660,7 @@ function pageFilm(f){
 function pageActor(a){
   const films = a.films.map(id => FILMS.find(f => f.id === id)).filter(Boolean).sort((x, y) => x.franchise.localeCompare(y.franchise) || byInst(x, y));
   const frs = [...new Set(films.map(f => f.franchise))];
+  const crewFilms = a.crew.map(c => ({ f: FILMS.find(x => x.id === c.film), role: c.role })).filter(c => c.f);
   const costars = ACTORS.filter(o => o.id !== a.id && o.films.some(id => a.films.includes(id)));
   setHero({ still: `cast/${a.id}.jpg`, soft: true, cls: 'sub', html: `
     <div class="person-head">
@@ -547,6 +671,7 @@ function pageActor(a){
         <h1 class="t2" tabindex="-1">${esc(a.name)}</h1>
         <div class="stats">
           <div><b>${films.length}</b><span>${films.length === 1 ? 'Film' : 'Films'} on site</span></div>
+          ${crewFilms.length ? `<div><b>${crewFilms.length}</b><span>Crew ${crewFilms.length === 1 ? 'credit' : 'credits'}</span></div>` : ''}
           ${frs.length ? `<div><b>${frs.length}</b><span>${frs.length === 1 ? 'Franchise' : 'Franchises'}</span></div>` : ''}
           ${costars.length ? `<div><b>${costars.length}</b><span>Co-stars</span></div>` : ''}
         </div>
@@ -554,10 +679,12 @@ function pageActor(a){
       </div>
     </div>` });
   $('#rows').innerHTML = `
-    <section class="pg row"><h2>About</h2><p class="lead">${esc(a.bio)}</p></section>
+    ${a.bio ? `<section class="pg row"><h2>About</h2><p class="lead">${esc(a.bio)}</p></section>` : ''}
     ${films.length ? rowHTML('', 'Filmography', plural(films.length, 'film'), track(films.map(f => cardHTML(f, 'franchise'))))
-      : `<section class="pg row"><h2>Filmography</h2><p class="none">None of the films on this site yet.</p></section>`}
-    ${costars.length ? rowHTML('', 'Worked with', '', track(costars.map(actorChip))) : ''}`;
+      : crewFilms.length ? '' : `<section class="pg row"><h2>Filmography</h2><p class="none">None of the films on this site yet.</p></section>`}
+    ${crewFilms.length ? rowHTML('', 'Behind the camera', '', track(crewFilms.map(c => `<a class="card" href="${urlFilm(c.f)}" aria-label="${esc(c.f.title)}">
+      <div class="poster">${posterHTML(c.f)}</div><div class="cap"><span>${esc(c.f.short || c.f.title)}</span><span>${esc(c.role)}</span></div></a>`))) : ''}
+    ${costars.length ? rowHTML('', 'Worked with', '', track(costars.map(a => actorChip(a)))) : ''}`;
   return `${a.name} · Red Hound Studios`;
 }
 
@@ -581,7 +708,8 @@ function pageFranchise(F){
   $('#rows').innerHTML = `
     <section class="row" style="--tagc:${F.glow}"><div class="row-h"><span class="tag" style="background:${F.glow}"></span><h2>All films</h2><p>In order</p></div>
       <div class="grid">${list.map(f => cardHTML(f)).join('')}</div></section>
-    ${cast.length ? rowHTML('', 'Cast', plural(cast.length, 'actor'), track(cast.map(actorChip))) : ''}`;
+    ${UPCOMING.some(f => f.franchise === F.id) ? rowHTML('', 'Coming soon', 'Follow to get updates', `<div class="track">${UPCOMING.filter(f => f.franchise === F.id).map(soonCard).join('')}</div>`) : ''}
+    ${cast.length ? rowHTML('', 'Cast', plural(cast.length, 'actor'), track(cast.map(a => actorChip(a)))) : ''}`;
   return `${F.name} · Red Hound Studios`;
 }
 
@@ -591,8 +719,8 @@ function pageActors(){
     <div class="eyebrow"><span class="dot"></span>Cast &amp; crew</div>
     <h1 tabindex="-1">Actors</h1>
     <div class="stats"><div><b>${ACTORS.length}</b><span>People</span></div>
-      <div><b>${ACTORS.filter(a => a.films.length).length}</b><span>In films on this site</span></div></div>` });
-  $('#rows').innerHTML = `<section class="row"><div class="agrid">${ACTORS.map(actorChip).join('')}</div></section>`;
+      <div><b>${ACTORS.filter(a => a.films.length || a.crew.length).length}</b><span>In films on this site</span></div></div>` });
+  $('#rows').innerHTML = `<section class="row"><div class="agrid">${ACTORS.map(a => actorChip(a)).join('')}</div></section>`;
   return 'Actors · Red Hound Studios';
 }
 
@@ -603,6 +731,7 @@ function resolve(h){
   if ((m = /^#\/actor\/([\w-]+)$/.exec(h))) { const a = ACTORS.find(x => x.id === m[1]); if (a) return () => pageActor(a); }
   if ((m = /^#\/franchise\/([\w-]+)$/.exec(h))) { const F = fr(m[1]); if (F) return () => pageFranchise(F); }
   if (h === '#/actors') return pageActors;
+  if (h === '#/#row-soon') return () => { const t = pageHome(); requestAnimationFrame(() => { const el = $('#row-soon'); el && scrollTo(0, el.getBoundingClientRect().top + scrollY - 80); }); return t; };
   return pageHome;
 }
 const history_ = [], scrollMem = {};
@@ -617,6 +746,7 @@ function route(){
     document.querySelectorAll('#nav a').forEach(a => a.classList.toggle('cur', a.getAttribute('href') === h));
     scrollTo(0, back ? (scrollMem[h] || 0) : 0);
     $('#app').classList.remove('leaving');
+    Follow.paint();
     if (!firstRoute) { const t = document.querySelector('#hero h1'); t && t.focus({ preventScroll:true }); }
     firstRoute = false;
   };
@@ -625,21 +755,25 @@ function route(){
   $('#app').classList.add('leaving');
   setTimeout(show, 200);
 }
-addEventListener('hashchange', route);
+addEventListener('hashchange', () => { $('#updates').classList.remove('on'); route(); });
 
 function render(){
+  Follow.load();
   $('#nav').innerHTML = `<a href="#/">Home</a>` + FRANCHISES.map(F => `<a href="${urlFr(F)}">${esc(F.name)}</a>`).join('') + `<a href="#/actors">Actors</a>`;
-  $('#count').textContent = `${plural(FILMS.length, 'film')} · ${plural(FRANCHISES.length, 'franchise')} · ${plural(ACTORS.length, 'actor')}`;
+  $('#count').textContent = `${plural(RELEASED.length, 'film')} · ${plural(FRANCHISES.length, 'franchise')} · ${plural(ACTORS.length, 'actor')}`;
   route();
 }
 
 document.addEventListener('click', e => {
+  const fb = e.target.closest('[data-follow]'); if (fb) { Follow.toggle(fb.dataset.follow); return; }
+  if (e.target.closest('#bell')) { const on = !$('#updates').classList.contains('on'); $('#updates').classList.toggle('on', on); $('#bell').setAttribute('aria-expanded', on); if (on) setTimeout(() => Follow.markRead(), 1200); return; }
+  if (!e.target.closest('#updates')) $('#updates').classList.remove('on');
   const v = e.target.closest('[data-vote]'); if (v) { Ratings.vote(v.dataset.vote, +v.dataset.n); return; }
   if (e.target.closest('#endskip')) { const ec = $('#endcard'); if (ec) ec.hidden = true; return; }
   const p = e.target.closest('[data-play]'); if (p) { playFilm(p.dataset.play); return; }
   if (e.target.closest('#pclose')) { closePlayer(); return; }
 });
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#player').classList.contains('on')) closePlayer(); });
+document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; if ($('#player').classList.contains('on')) closePlayer(); else $('#updates').classList.remove('on'); });
 addEventListener('scroll', () => $('#bar').classList.toggle('solid', scrollY > 40), {passive:true});
 
 /* ---------- Player ----------
