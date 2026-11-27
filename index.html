@@ -122,6 +122,27 @@ main>*{min-width:0;scroll-margin-top:calc(72px + env(safe-area-inset-top,0px))}
 .when{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
 .soon-chip{background:var(--hound);border-color:var(--hound);color:#fff;font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:11px}
 .soon-tag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:var(--hound);padding:2px 6px;border-radius:4px;white-space:nowrap;line-height:1.4}
+.news-card{flex:0 0 auto;width:min(440px,84vw);display:grid;grid-template-columns:84px minmax(0,1fr);gap:16px;align-items:start;padding:14px;border-radius:12px;text-decoration:none;background:linear-gradient(120deg,rgba(211,38,46,.14),rgba(255,255,255,.03));box-shadow:inset 0 0 0 1px var(--line);scroll-snap-align:start;transition:transform .45s var(--ease),box-shadow .35s}
+.news-card:hover{transform:translateY(-4px);box-shadow:inset 0 0 0 1px var(--hound),0 20px 50px rgba(0,0,0,.5)}
+.news-card .poster{aspect-ratio:2/3;border-radius:6px;overflow:hidden}
+.news-card>div:last-child{display:grid;gap:6px;min-width:0}
+.news-card b{font-family:var(--display);font-weight:400;font-size:26px;line-height:1;letter-spacing:.02em}
+.news-card p{margin:0;font-size:13px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.news-list{gap:0}
+.news-item{display:grid;gap:10px;padding:26px 0;border-bottom:1px solid var(--line);max-width:760px}
+.news-item:first-child{padding-top:6px}
+.news-item h3{margin:0;font-family:var(--display);font-weight:400;font-size:clamp(32px,4vw,44px);line-height:1;letter-spacing:.02em}
+.news-item p{margin:0;color:var(--muted);font-size:16px;line-height:1.7;max-width:68ch}
+.news-item em,.news-card em,.ulist em{color:var(--fg)}
+.news-films{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin-top:4px}
+.nf{display:inline-flex;align-items:center;gap:10px;font-size:13px;font-weight:700;text-decoration:none;padding:4px 12px 4px 4px;border-radius:8px;background:var(--surface);transition:background .2s}
+.nf:hover{background:#261f1d}
+.nf .poster{width:30px;aspect-ratio:2/3;border-radius:4px;overflow:hidden;display:block}
+.news-films .btn.follow{padding:7px 14px;font-size:13px}
+.ulist b{font-size:15px}
+.upd b{font-weight:700;color:inherit}
+@keyframes ring{0%,100%{transform:rotate(0)}15%{transform:rotate(16deg)}30%{transform:rotate(-14deg)}45%{transform:rotate(10deg)}60%{transform:rotate(-6deg)}75%{transform:rotate(3deg)}}
+.bell.ping svg{animation:ring 1s var(--ease) 2;transform-origin:50% 10%}
 .btn.follow{padding:10px 18px;font-size:14px}
 .btn.follow.on{background:var(--hound);color:#fff}
 .ulist{list-style:none;margin:0;padding:0;display:grid;gap:14px;max-width:68ch;border-left:2px solid var(--line)}
@@ -367,19 +388,14 @@ const FILMS = [
     youtube:"EekKzH1vIvY", poster:"posters/ghostbusters-haunting-hour.png",
     rating:3.5, year:"May 2026", runtime:"2m 9s" },
 
-  { id:"gb-last-dance", franchise:"ghostbusters", upcoming:true, installment:15,
+  { id:"gb-last-dance", franchise:"ghostbusters", upcoming:true, installment:14,
     title:"Ghostbusters: The Last Dance", short:"The Last Dance",
     poster:"posters/ghostbusters-the-last-dance.png", release:"Late 2026 – early 2027",
-    description:"Ghostbusters: The Last Dance will be the final installment in the Ghostbusters franchise. A release is hoped for late 2026 to early 2027.",
-    /* Followers see new entries here under the bell. Newest last. */
-    updates:[
-      { date:"2026-11-27", text:"Announced as the final installment in the Ghostbusters franchise. A release is hoped for late 2026 to early 2027." }
-    ] },
+    description:"Ghostbusters: The Last Dance is expected to be the 14th installment in the Ghostbusters franchise. A release is hoped for late 2026 to early 2027." },
 
-  { id:"gb-dreamcore", franchise:"ghostbusters", upcoming:true, tag:"Prequel",
+  { id:"gb-dreamcore", franchise:"ghostbusters", upcoming:true, installment:15, tag:"Final installment",
     title:"Ghostbusters: Dreamcore", short:"Dreamcore",
-    poster:"posters/ghostbusters-dreamcore.webp?v=3", release:"2027",
-    updates:[] },
+    poster:"posters/ghostbusters-dreamcore.webp?v=3", release:"2027" },
 
   /* Pool Shark */
   { id:"ps-1", franchise:"pool-shark", installment:1,
@@ -399,6 +415,22 @@ const FILMS = [
     title:"Dead by Daylight", short:"Dead by Daylight",
     youtube:"cw12Bmfbfqk", poster:"posters/dead-by-daylight.webp",
     rating:4.5, runtime:"59s", views:195 }
+];
+
+/* ---------- News ----------
+   Newest first. films = the films a post is about; anyone following one of
+   them gets pinged (red count on the bell) on their next visit.
+   Wrap a word in *asterisks* for italics. */
+const NEWS = [
+  { id:"dreamcore-after-last-dance", date:"2026-11-27", films:["gb-dreamcore","gb-last-dance"],
+    title:"Dreamcore takes place after The Last Dance",
+    text:"Ghostbusters: Dreamcore is confirmed to take place *after* the last dance. Creators plan to keep the plot hidden for a long time, so this is the only leak we can discuss. Another piece of information revealed is that the movie will feature little to no ghostbusting, which is something." },
+  { id:"last-dance-not-last", date:"2026-11-27", films:["gb-last-dance","gb-dreamcore"],
+    title:"The Last Dance is no longer the last",
+    text:"Ghostbusters: The Last Dance is expected to be the 14th installment to the franchise, but is no longer the last. Ghostbusters: Dreamcore is now expected to be the final installment. The change has no explanation, but our theory is that the creators probably wanted to split the end into two movies to stretch out the franchise a bit longer." },
+  { id:"gb-last-dance@2026-11-27@113", date:"2026-11-27", films:["gb-last-dance"],
+    title:"The Last Dance announced",
+    text:"Announced as the final installment in the Ghostbusters franchise. A release is hoped for late 2026 to early 2027." }
 ];
 
 /* Film shown in the big banner at the top. */
@@ -485,26 +517,25 @@ const track = items => `<div class="track">${items.join('')}</div>`;
 const seeAll = (href, label = 'See all') => `<a class="see" href="${href}">${label} ›</a>`;
 
 /* ---------- Following upcoming films ----------
-   Followed films and seen updates are remembered in this browser. */
+   Followed films and read news are remembered in this browser. */
+const newsFor = f => NEWS.filter(n => n.films.includes(f.id));
+const newsText = t => esc(t).replace(/\*([^*]+)\*/g, '<em>$1</em>');
 const Follow = {
   ids: new Set(), seen: new Set(),
   load(){ this.ids = new Set(ls.get('rh-follow', [])); this.seen = new Set(ls.get('rh-seen', [])); },
-  key: (f, u) => `${f.id}@${u.date}@${u.text.length}`,
   save(){ ls.set('rh-follow', [...this.ids]); ls.set('rh-seen', [...this.seen]); },
   toggle(id){
     const f = FILMS.find(x => x.id === id); if (!f) return;
     if (this.ids.has(id)) { this.ids.delete(id); toast(`Unfollowed ${f.short || f.title}`); }
-    else { this.ids.add(id); (f.updates || []).forEach(u => this.seen.add(this.key(f, u)));
-      toast(`Following ${f.short || f.title}. New updates appear under the bell.`); }
+    else { this.ids.add(id); newsFor(f).forEach(n => this.seen.add(n.id));
+      toast(`Following ${f.short || f.title}. You'll be pinged when there's news.`); }
     this.save(); this.paint();
   },
-  feed(){
-    return FILMS.filter(f => this.ids.has(f.id)).flatMap(f => (f.updates || []).map(u => ({ f, u, unread: !this.seen.has(this.key(f, u)) })))
-      .sort((a, b) => b.u.date.localeCompare(a.u.date));
-  },
-  markRead(){ this.feed().forEach(x => this.seen.add(this.key(x.f, x.u))); this.save(); this.paint(); },
+  feed(){ return NEWS.filter(n => n.films.some(id => this.ids.has(id))).map(n => ({ n, unread: !this.seen.has(n.id) })); },
+  unread(){ return this.feed().filter(x => x.unread).length; },
+  markRead(){ this.feed().forEach(x => this.seen.add(x.n.id)); this.save(); this.paint(); },
   paint(){
-    const unread = this.feed().filter(x => x.unread).length;
+    const unread = this.unread();
     const n = $('#bell .n'); n.textContent = unread; n.hidden = !unread;
     $('#bell').setAttribute('aria-label', unread ? `Updates, ${unread} new` : 'Updates');
     document.querySelectorAll('[data-follow]').forEach(b => {
@@ -514,12 +545,33 @@ const Follow = {
     });
     const feed = this.feed();
     $('#updates').innerHTML = `<h4>Updates</h4>${feed.length ? feed.map(x => `
-      <a class="upd${x.unread ? ' new' : ''}" href="${urlFilm(x.f)}">
-        <span class="when">${esc(fmtDate(x.u.date))} · ${esc(x.f.short || x.f.title)}</span>${esc(x.u.text)}</a>`).join('')
-      : `<p class="none">${this.ids.size ? 'No updates yet.' : 'Follow an upcoming film to get its updates here.'}</p>`}
-`;
+      <a class="upd${x.unread ? ' new' : ''}" href="#/news">
+        <span class="when">${esc(fmtDate(x.n.date))} · ${x.n.films.map(id => esc(FILMS.find(f => f.id === id).short)).join(', ')}</span>
+        <b>${esc(x.n.title)}</b></a>`).join('')
+      : `<p class="none">${this.ids.size ? 'No news yet.' : 'Follow an upcoming film to get pinged when there\'s news.'}</p>`}
+      <a class="see" href="#/news" style="margin:0">All news ›</a>`;
+  },
+  ping(){
+    const u = this.unread(); if (!u) return;
+    $('#bell').classList.remove('ping'); void $('#bell').offsetWidth; $('#bell').classList.add('ping');
+    toast(`${u} new ${u === 1 ? 'update' : 'updates'} on films you follow. Tap the bell.`);
   }
 };
+function newsCard(n){
+  const f = FILMS.find(x => x.id === n.films[0]);
+  return `<a class="news-card" href="#/news">
+    <div class="poster">${posterHTML(f)}</div>
+    <div><span class="when">${esc(fmtDate(n.date))}</span><b>${esc(n.title)}</b><p>${newsText(n.text)}</p></div></a>`;
+}
+function newsArticle(n){
+  const films = n.films.map(id => FILMS.find(f => f.id === id)).filter(Boolean);
+  return `<article class="news-item" id="news-${esc(n.id)}">
+    <span class="when">${esc(fmtDate(n.date))}</span>
+    <h3>${esc(n.title)}</h3>
+    <p>${newsText(n.text)}</p>
+    <div class="news-films">${films.map(f => `<a class="nf" href="${urlFilm(f)}"><span class="poster">${posterHTML(f)}</span>${esc(f.short || f.title)}</a>${f.upcoming ? followBtn(f) : ''}`).join('')}</div>
+  </article>`;
+}
 const fmtDate = d => new Date(d + 'T12:00:00').toLocaleDateString(undefined, { day:'numeric', month:'short', year:'numeric' });
 const followBtn = f => `<button class="btn ghost follow" data-follow="${f.id}" aria-pressed="false">+ Follow</button>`;
 /* ---------- Hero ---------- */
@@ -585,7 +637,8 @@ function pageHome(){
       F.popular ? '<span class="pop">★ Most popular franchise</span>' : '', seeAll(urlFr(F), 'Franchise page'))}</div>`;
   }).join('');
   const actorsRow = rowHTML('row-actors', 'Actors', `${ACTORS.length} people`, track(ACTORS.map(a => actorChip(a))), '', seeAll('#/actors'));
-  $('#rows').innerHTML = topRow + frRows + actorsRow;
+  const newsRow = NEWS.length ? rowHTML('row-news', 'News', 'Latest from the studio', track(NEWS.slice(0, 4).map(newsCard)), '', seeAll('#/news', 'All news')) : '';
+  $('#rows').innerHTML = topRow + newsRow + frRows + actorsRow;
   return 'Red Hound Studios';
 }
 
@@ -601,12 +654,12 @@ function pageUpcoming(f){
         <div class="actions">${followBtn(f)}</div>
       </div>
     </div>` });
-  const ups = [...(f.updates || [])].reverse();
+  const ups = newsFor(f);
   $('#rows').innerHTML = `
     ${f.description ? `<section class="pg row"><h2>About</h2><p class="lead">${esc(f.description)}</p></section>` : ''}
-    <section class="pg row"><h2>Updates</h2>
-      ${ups.length ? `<ol class="ulist">${ups.map(u => `<li><span class="when">${esc(fmtDate(u.date))}</span><p>${esc(u.text)}</p></li>`).join('')}</ol>` : '<p class="none">No updates yet.</p>'}
-      <p class="hint">Follow this film and new updates will show under the bell at the top of the site.</p>
+    <section class="pg row"><h2>News</h2>
+      ${ups.length ? `<ol class="ulist">${ups.map(n => `<li><span class="when">${esc(fmtDate(n.date))}</span><b>${esc(n.title)}</b><p>${newsText(n.text)}</p></li>`).join('')}</ol>` : '<p class="none">No news yet.</p>'}
+      <p class="hint">Follow this film to get pinged under the bell when there's news.</p>
       ${timelineHTML(f, F)}</section>
     ${list.length ? `<div style="--tagc:${F.glow}">${rowHTML('', `More ${F.name}`, '', track(timelineOf(F).filter(x => x.id !== f.id).map(x => cardHTML(x))), '', seeAll(urlFr(F)))}</div>` : ''}`;
   return `${f.title} · Red Hound Studios`;
@@ -719,6 +772,16 @@ function pageActors(){
   return 'Actors · Red Hound Studios';
 }
 
+function pageNews(){
+  setHero({ cls: 'sub slim', html: `
+    <div class="crumbs"><a href="#/">Home</a></div>
+    <div class="eyebrow"><span class="dot"></span>From the studio</div>
+    <h1 tabindex="-1">News</h1>
+    <div class="stats"><div><b>${NEWS.length}</b><span>${NEWS.length === 1 ? 'Post' : 'Posts'}</span></div></div>` });
+  $('#rows').innerHTML = `<section class="pg row news-list">${NEWS.map(newsArticle).join('')}</section>`;
+  return 'News · Red Hound Studios';
+}
+
 /* ---------- Router ---------- */
 function resolve(h){
   let m;
@@ -726,6 +789,7 @@ function resolve(h){
   if ((m = /^#\/actor\/([\w-]+)$/.exec(h))) { const a = ACTORS.find(x => x.id === m[1]); if (a) return () => pageActor(a); }
   if ((m = /^#\/franchise\/([\w-]+)$/.exec(h))) { const F = fr(m[1]); if (F) return () => pageFranchise(F); }
   if (h === '#/actors') return pageActors;
+  if (h === '#/news') return pageNews;
   return pageHome;
 }
 const history_ = [], scrollMem = {};
@@ -753,9 +817,10 @@ addEventListener('hashchange', () => { $('#updates').classList.remove('on'); rou
 
 function render(){
   Follow.load();
-  $('#nav').innerHTML = `<a href="#/">Home</a>` + FRANCHISES.map(F => `<a href="${urlFr(F)}">${esc(F.name)}</a>`).join('') + `<a href="#/actors">Actors</a>`;
+  $('#nav').innerHTML = `<a href="#/">Home</a>` + FRANCHISES.map(F => `<a href="${urlFr(F)}">${esc(F.name)}</a>`).join('') + `<a href="#/actors">Actors</a><a href="#/news">News</a>`;
   $('#count').textContent = `${plural(RELEASED.length, 'film')} · ${plural(FRANCHISES.length, 'franchise')} · ${plural(ACTORS.length, 'actor')}`;
   route();
+  setTimeout(() => Follow.ping(), 900);
 }
 
 document.addEventListener('click', e => {
